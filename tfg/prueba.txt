@@ -1,0 +1,3 @@
+curl https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
+curl -G https://api.abuseipdb.com/api/v2/blacklist -d confidenceMinimum=90 -H "Key: dd13fa2f9319127e940894ecbbed05376daa795a65012063ea81f3deb332ff616f3242a50fadffb9" -H "Accept: text/plain"
+curl https://www.binarydefense.com/banlist.txt

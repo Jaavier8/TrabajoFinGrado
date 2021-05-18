@@ -1,0 +1,532 @@
+#!/usr/bin/env python3
+import sys, os
+import subprocess
+import argparse
+from lxml import etree
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('pc1')
+
+
+#########################################################
+
+def print_title():
+    title = """
+
+
+██████╗  ██████╗ ██╗
+██╔══██╗██╔════╝███║
+██████╔╝██║     ╚██║
+██╔═══╝ ██║      ██║
+██║     ╚██████╗ ██║
+╚═╝      ╚═════╝ ╚═╝
+
+
+"""
+    print(title)
+
+# Print a beautiful title for the script
+print_title()
+
+#########################################################
+
+# Parse arguments
+orders = ['create', 'start', 'stop', 'release', 'monitor', 'start-machine', 'stop-machine']
+parser = argparse.ArgumentParser(description='Script práctica creativa 1. Construye el escenario especificado.')
+parser.add_argument('order', metavar='order', nargs=1, choices=orders, help='Order to execute: create, start, start-machine, stop, stop-machine, release, monitor.')
+parser.add_argument('num_servers', metavar='num_servers', nargs='?', default=2, type=int, choices=range(1, 6), help='Number of servers to create. It is only useful with order "create", and by default it is 2.')
+parser.add_argument('--machine',dest='machine_individual', metavar='machine_name', nargs='?', default='', help='Name of the machine to start/stop individually. It is needed with orders "start-machine" and "stop-machine".')
+args = parser.parse_args()
+
+#########################################################
+
+def print_ok(text):
+    OKGREEN = '\033[92m'
+    ENDC = '\033[0m'
+    print(OKGREEN + text + ENDC)
+
+#########################################################
+
+def print_error(text):
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    print(FAIL + text + ENDC)
+
+#########################################################
+
+def edit_xml(machine_name):
+    """Edits xml for the given machine"""
+    source_file = os.path.join(os.getcwd(), f'{machine_name}.qcow2')
+    xml_file = os.path.join(os.getcwd(), f'{machine_name}.xml')
+    logger.debug(f'Editing xml file {xml_file}')
+    tree = etree.parse(xml_file)
+    logger.debug(f'{xml_file} content:\n{etree.tounicode(tree, pretty_print=True)}')
+    root = tree.getroot()
+    name = root.find('name')
+    name.text = machine_name.upper()
+    source_disk_devices = root.find('./devices/disk/source')
+    source_disk_devices.set('file', source_file)
+    source_interface_devices = root.find('./devices/interface[@type="bridge"]/source')
+    if machine_name == 'c1':
+        # Modify existing source tag in interface tag in devices tag
+        source_interface_devices.set('bridge', 'LAN1')
+    elif machine_name == 'lb':
+        # Modify existing source tag in interface tag in devices tag
+        source_interface_devices.set('bridge', 'LAN1')
+        # Create new interface tag
+        new_interface_tag = etree.Element('interface')
+        new_interface_tag.set('type', 'bridge')
+        # Create new source tag
+        new_source_tag = etree.Element('source')
+        new_source_tag.set('bridge', 'LAN2')
+        # Create new model tag
+        new_model_tag = etree.Element('model')
+        new_model_tag.set('type', 'virtio')
+        # Add source and model tags to interface tag
+        new_interface_tag.append(new_source_tag)
+        new_interface_tag.append(new_model_tag)
+        # Add new interface tag to devices
+        devices_tag = root.find('devices')
+        devices_tag.append(new_interface_tag)
+    else:
+        # We are with servers
+        # Modify existing source tag in interface tag in devices tag
+        source_interface_devices.set('bridge', 'LAN2')
+    logger.debug(f'{xml_file} content:\n{etree.tounicode(tree, pretty_print=True)}')
+    tree.write(f'{xml_file}', pretty_print=True)
+
+#########################################################
+
+def cmd(cmd):
+    """Executes the command in cmd and exits if it fails"""
+    res = subprocess.call(cmd.split(' '))
+    if res != 0:
+        # logger.error(f'Error: The result was {res} when executing command "{cmd}".')
+        print_error(f'[-] Error: The result was {res} when executing command "{cmd}".')
+        sys.exit(1)
+
+#########################################################
+
+def cmd_noexit(cmd):
+    """Executes the command in cmd but doesn't exit if it fails"""
+    res = subprocess.call(cmd.split(' '))
+    if res != 0:
+        # logger.error(f'Error: The result was {res} when executing command "{cmd}".')
+        print_error(f'[-] Error: The result was {res} when executing command "{cmd}".')
+
+#########################################################
+
+def fopen(path, mode):
+    """Opens file and checks if it is successfully done"""
+    try:
+        f = open(path, mode)
+    except IOError:
+        print(f"[-] File {path} doesn't exist. Probably the environment is not created. Try running \"pc1.py create [num_servers]\"")
+        sys.exit(1)
+    return f
+
+#########################################################
+
+def add_servers2machine_names(machine_names):
+    """Adds server names to machine names"""
+    pc1_cfg_file = fopen('pc1.cfg','r')
+    num_servers_line = pc1_cfg_file.read().strip().split('=')
+    logger.debug(num_servers_line)
+    if len(num_servers_line) < 2 or 'num_serv' != num_servers_line[0]:
+        logger.error('Error: Not a valid pc1.cfg file.')
+        pc1_cfg_file.close()
+        sys.exit(1)
+    num_servers = int(num_servers_line[1])
+    logger.debug(f'Number of servers detected: {num_servers}.')
+    pc1_cfg_file.close()
+    for i in range(1, num_servers + 1):
+        machine_names.append(f's{i}')
+    return machine_names
+
+#########################################################
+
+def write_num_servers(num_servers):
+    """Write number of servers to pc1.cfg in the format specified: num_serv=x"""
+    pc1_cfg_file = open('pc1.cfg','w')
+    pc1_cfg_file.write(f'num_serv={num_servers}')
+    pc1_cfg_file.close()
+
+#########################################################
+
+def configure_host():
+    """Configures host LAN1, LAN2 and IP route to servers with LB as gateway"""
+    cmd('sudo brctl addbr LAN1')
+    cmd('sudo brctl addbr LAN2')
+    cmd('sudo ifconfig LAN1 up')
+    cmd('sudo ifconfig LAN2 up')
+    cmd('sudo ifconfig LAN1 10.0.1.3/24')
+    cmd('sudo ip route add 10.0.0.0/16 via 10.0.1.1')
+
+#########################################################
+
+def configure_interfaces(machine_name, ips_dict):
+    """Configures /etc/network/interfaces for machine machine_name."""
+    interfaces_content = ''
+    if machine_name == 'lb':
+        interfaces_content = f"""# Created by our script. DO NOT MODIFY.
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address 10.0{ips_dict[machine_name + '1']}
+netmask 255.255.255.0
+# gateway
+dns-nameservers 8.8.8.8
+
+auto eth1
+iface eth1 inet static
+address 10.0{ips_dict[machine_name + '2']}
+netmask 255.255.255.0
+# gateway
+dns-nameservers 8.8.8.8"""
+    else:
+        interfaces_content = f"""# Created by our script. DO NOT MODIFY.
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address 10.0{ips_dict[machine_name][0]}
+netmask 255.255.255.0
+gateway 10.0{ips_dict[machine_name][1]}
+dns-nameservers 8.8.8.8"""
+    interfaces_file = open('interfaces','w')
+    interfaces_file.write(interfaces_content)
+    interfaces_file.close()
+    cmd(f'sudo virt-copy-in -a {machine_name}.qcow2 interfaces /etc/network')
+    os.remove('interfaces')
+
+#########################################################
+
+def configure_hostname(machine_name):
+    """Configures /etc/hostname for machine machine_name"""
+    hostname_file = open('hostname','w')
+    hostname_file.write(machine_name)
+    hostname_file.close()
+    cmd(f'sudo virt-copy-in -a {machine_name}.qcow2 hostname /etc')
+    os.remove('hostname')
+
+#########################################################
+
+def configure_rclocal():
+    """Configures rc.local in LB"""
+    rc_content = f"""#!/bin/bash
+# Arrancar HAproxy
+sudo service apache2 stop
+sudo service haproxy start
+exit 0"""
+    rc_file = open('rc.local','w')
+    rc_file.write(rc_content)
+    rc_file.close()
+    cmd(f'sudo virt-copy-in -a lb.qcow2 rc.local /etc')
+    os.remove('rc.local')
+
+#########################################################
+
+def configure_haproxy(machine_names, ips_dict):
+    """Configures haproxy.cfg in all the servers created."""
+    haproxy_content = f"""
+global
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+
+        # Default SSL material locations
+        ca-base /etc/ssl/certs
+        crt-base /etc/ssl/private
+
+        # Default ciphers to use on SSL-enabled listening sockets.
+        # For more information, see ciphers(1SSL). This list is from:
+        #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
+        # An alternative list with additional directives can be obtained from
+        #  https://mozilla.github.io/server-side-tls/ssl-config-generator/?server=haproxy
+        ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS
+        ssl-default-bind-options no-sslv3
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+        errorfile 400 /etc/haproxy/errors/400.http
+        errorfile 403 /etc/haproxy/errors/403.http
+        errorfile 408 /etc/haproxy/errors/408.http
+        errorfile 500 /etc/haproxy/errors/500.http
+        errorfile 502 /etc/haproxy/errors/502.http
+        errorfile 503 /etc/haproxy/errors/503.http
+        errorfile 504 /etc/haproxy/errors/504.http
+
+frontend lb
+        bind *:80
+        mode http
+        default_backend webservers
+
+backend webservers
+        mode http
+        balance roundrobin
+        #s1
+        #s2
+        #s3
+        #s4
+        #s5
+
+listen stats
+        bind :8001
+        stats enable
+        stats uri /
+        stats hide-version
+        stats auth admin:cdps"""
+    # Replace si with the correct server configuration for each server created
+    for machine_name in machine_names:
+        if 's' in machine_name:
+            # It is a server
+            haproxy_content = haproxy_content.replace(f'#{machine_name}',f'server {machine_name} 10.0{ips_dict[machine_name][0]}:80 check')
+    haproxy_file = open('haproxy.cfg','w')
+    haproxy_file.write(haproxy_content)
+    haproxy_file.close()
+    cmd(f'sudo virt-copy-in -a lb.qcow2 haproxy.cfg /etc/haproxy')
+    os.remove('haproxy.cfg')
+
+#########################################################
+
+def create_index_servers(machine_names):
+    """Creates customized index.html for each server."""
+    for machine_name in machine_names:
+        if 's' in machine_name:
+            # It is a server
+            index_content = f'Welcome! We are in {machine_name.upper()}\n'
+            index_file = open('index.html','w')
+            index_file.write(index_content)
+            index_file.close()
+            cmd(f'sudo virt-copy-in -a {machine_name}.qcow2 index.html /var/www/html')
+    os.remove('index.html')
+
+#########################################################
+
+def main(args):
+    """Main code. Runs the specified order"""
+    # Machine we are sure they must exist
+    machine_names = ['lb','c1']
+
+    # Get order
+    order = args.order[0] # We know it exists
+
+    print(f'[*] Executing order: {order}.')
+
+
+    ###########################################################
+    #                       Create                            #
+    ###########################################################
+    if order == orders[0]: # Create
+        print('[*] Creating the environment.')
+
+        # Defining orders we will need later
+        copy_on_write_order = 'qemu-img create -f qcow2 -b cdps-vm-base-pc1.qcow2 target.qcow2'
+        copy_xml_order = 'cp plantilla-vm-pc1.xml target.xml'
+
+        # Get number of servers from command
+        num_servers = args.num_servers
+
+        print(f'[*] Creating {num_servers} server(s) copy-on-write images and xml.')
+
+        # Write number of servers to file pc1.cfg
+        write_num_servers(num_servers)
+
+        # Adding server names to machine names
+        for i in range(1, num_servers + 1):
+            machine_names.append(f's{i}')
+
+        # Create C1, LB and servers copy-on-write images and xml
+        print('[*] Creating C1, LB and servers copy-on-write images and xml.')
+        for machine_name in machine_names:
+            cmd(copy_on_write_order.replace('target', machine_name))
+            cmd(copy_xml_order.replace('target', machine_name))
+            edit_xml(machine_name)
+        print_ok('[+] Images and XMLs created.')
+
+        # Configure LAN1 and LAN2 in host. Add IP route to servers with LB as router.
+        print('[*] Configuring Host.')
+        configure_host()
+        print_ok('[+] Host configured.')
+
+        # Define vms with virsh define
+        print('[*] Defining all the VMs.')
+        for machine_name in machine_names:
+            cmd(f'sudo virsh define {machine_name}.xml')
+        print_ok('[+] All the VMs defined.')
+
+        # Configure hostname and interfaces for each machine
+        print('[*] Configuring /etc/hostname and /etc/network/interfaces.')
+        # Dictionary. Servers y C1 -> IP,GW ; LB1 -> IP for LB in LAN1 ; LB2 -> IP for LB in LAN2
+        ips_dict = {'s1':['.2.11','.2.1'], 's2':['.2.12','.2.1'], 's3':['.2.13','.2.1'], 's4':['.2.14','.2.1'],
+            's5':['.2.15','.2.1'], 'lb1':'.1.1', 'lb2':'.2.1', 'c1':['.1.2','.1.1']}
+        for machine_name in machine_names:
+            # Interfaces file
+            configure_interfaces(machine_name, ips_dict)
+            # Hostname file
+            configure_hostname(machine_name)
+        print_ok('[+] /etc/hostname and /etc/network/interfaces configured.')
+
+        # Configure HAproxy to start at boot
+        print('[*] Configure HAproxy to start at boot in LB.')
+        # rc.local file
+        print('[*] Configure rc.local in LB.')
+        configure_rclocal()
+        print_ok('[+] rc.local configured in LB.')
+        # haproxy.cfg file
+        print('[*] Configure haproxy.cfg in LB.')
+        configure_haproxy(machine_names, ips_dict)
+        print_ok('[+] haproxy.cfg configured in LB.')
+        print_ok('[+] HAproxy configured to start at boot in LB.')
+
+        # Enable IP forwarding in LB (router)
+        print('[*] Enabling IP forwarding in LB.')
+        os.system("sudo virt-edit -a lb.qcow2 /etc/sysctl.conf -e 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/'")
+        print_ok('[+] IP forwarding enabled in LB.')
+
+        # index.html file for servers
+        print('[*] Creating customized index.html in each server.')
+        create_index_servers(machine_names)
+        print_ok('[+] Customized index.html created in each server.')
+
+        print_ok('[+] Environment created.')
+        return
+
+    ###########################################################
+    #                        Start                            #
+    ###########################################################
+    if order == orders[1]: # Start
+        logger.debug('Starting')
+        print('[*] Starting the environment.')
+        machine_names = add_servers2machine_names(machine_names)
+        for machine_name in machine_names:
+            print(f'[*] Starting machine {machine_name.upper()}.')
+            cmd(f'sudo virsh start {machine_name.upper()}')
+            print_ok(f'[+] Machine {machine_name.upper()} started.')
+            print(f'[*] Starting console for machine {machine_name.upper()}.')
+            os.system(f"xterm -e 'sudo virsh console {machine_name.upper()}' &")
+            print_ok(f'[+] Console for machine {machine_name.upper()} started.')
+        print_ok('[+] Environment started.')
+        return
+
+
+    ###########################################################
+    #                         Stop                            #
+    ###########################################################
+    if order == orders[2]: # Stop
+        logger.debug('Stopping')
+        print('[*] Stopping the environment.')
+        machine_names = add_servers2machine_names(machine_names)
+        for machine_name in machine_names:
+            print(f'[*] Shutting down machine {machine_name.upper()}.')
+            cmd_noexit(f'sudo virsh shutdown {machine_name.upper()}')
+            print_ok(f'[+] Machine {machine_name.upper()} shut down.')
+        print_ok('[+] Environment stopped.')
+        return
+
+
+    ###########################################################
+    #                       Release                           #
+    ###########################################################
+    if order == orders[3]: # Release
+        logger.debug('Releasing')
+        print('[*] Releasing the environment.')
+        machine_names = add_servers2machine_names(machine_names)
+        os.remove('pc1.cfg')
+        print(f'[*] Undefining VMs.')
+        for machine_name in machine_names:
+            cmd(f'sudo virsh undefine {machine_name.upper()}')
+        print_ok(f'[+] VMs undefined.')
+        print('[*] Deleting XML and qcow2 files.')
+        for machine_name in machine_names:
+            os.remove(f'{machine_name}.xml')
+            os.remove(f'{machine_name}.qcow2')
+        print_ok('[+] XML and qcow2 files deleted.')
+        print('[*] Deleting LAN1 and LAN2 virtual bridges.')
+        cmd('sudo ifconfig LAN1 down')
+        cmd('sudo ifconfig LAN2 down')
+        cmd('sudo brctl delbr LAN1')
+        cmd('sudo brctl delbr LAN2')
+        print_ok('[+] LAN1 and LAN2 virtual bridges deleted.')
+        return
+
+
+    ###########################################################
+    #                        Monitor                          #
+    ###########################################################
+    if order == orders[4]: # Monitor
+        logger.debug('Monitoring')
+        print('[*] Monitoring the environment.')
+        # Read number of servers
+        machine_names = add_servers2machine_names(machine_names)
+        # Enum stats for each domain (VM instance)
+        stats_domain = ['domstate', 'dominfo', 'cpu-stats'] # domain stats to query for each domain
+        for machine_name in machine_names:
+            print(f'##############################################################################')
+            print(f'#                                     {machine_name}                                     #')
+            print(f'##############################################################################')
+            for stat in stats_domain:
+                cmd_noexit(f'sudo virsh {stat} {machine_name.upper()}')
+        print_ok('[+] Environment stats presented.')
+        return
+
+
+    ###########################################################
+    #                      Start-machine                      #
+    ###########################################################
+    if order == orders[5]: # Start-machine
+        logger.debug('Starting individual machine')
+        if args.machine_individual is None or args.machine_individual == '':
+            print_error(f'[-] No machine name provided. Try running \"pc1.py stop-machine --machine <machine_name>\"')
+            sys.exit(1)
+        # Add servers to machine names
+        machine_names = add_servers2machine_names(machine_names)
+        # Read individual machine to start
+        machine_individual = args.machine_individual.lower()
+        if machine_individual not in machine_names:
+            print_error(f'[-] Machine {machine_individual.upper()} not defined.')
+            sys.exit(1)
+        print(f'[*] Starting machine {machine_individual.upper()}.')
+        cmd(f'sudo virsh start {machine_individual.upper()}')
+        print_ok(f'[+] Machine {machine_individual.upper()} started.')
+        print(f'[*] Starting console for machine {machine_individual.upper()}.')
+        os.system(f"xterm -e 'sudo virsh console {machine_individual.upper()}' &")
+        print_ok(f'[+] Console for machine {machine_individual.upper()} started.')
+        return
+
+
+    ###########################################################
+    #                      Stop-machine                       #
+    ###########################################################
+    if order == orders[6]: # Stop-machine
+        logger.debug('Stopping individual machine')
+        if args.machine_individual is None or args.machine_individual == '':
+            print_error(f'[-] No machine name provided. Try running \"pc1.py stop-machine --machine <machine_name>\"')
+            sys.exit(1)
+        machine_individual = args.machine_individual.lower()
+        # Read number of servers
+        machine_names = add_servers2machine_names(machine_names)
+        if machine_individual not in machine_names:
+            print_error(f'[-] Machine {machine_individual.upper()} not defined.')
+            sys.exit(1)
+        print(f'[*] Shutting down machine {machine_individual.upper()}.')
+        cmd(f'sudo virsh shutdown {machine_individual.upper()}')
+        print_ok(f'[+] Machine {machine_individual.upper()} shut down.')
+        return
+
+main(args)

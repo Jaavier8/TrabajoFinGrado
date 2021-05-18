@@ -1,0 +1,5 @@
+*Relaconar 3 indicadores de hashes (sha1,sha256,md5) con un malware
+*Máximo timepo de espera de un curl
+*EN OTX guardr fecha en la que descrgo, y la siguiente descarga realizarla desde esa fecha
+
+*Es necesario ejecutar dentro de la carpeta TFG, si no no funciona getcwd en alienvault.py
