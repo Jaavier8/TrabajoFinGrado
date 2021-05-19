@@ -18,6 +18,10 @@ public class Indicator extends STIXObject implements Serializable{
 	private String valid_from;
 	private static final long serialVersionUID = 1L;
 	
+	public Indicator() {
+		
+	}
+	
 	public Indicator(String name, String description, String pattern, String pattern_type, String pattern_version,
 			String valid_from) {
 		super();

@@ -17,7 +17,7 @@ public class STIXObject implements Serializable {
 	@Id
 	@GeneratedValue
 	private Long identifier;
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String type;
 	private String spec_version;
 	private String id;

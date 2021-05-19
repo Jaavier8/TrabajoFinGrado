@@ -65,6 +65,8 @@ def alienvault_data2stix(data):
         bundles.append(stix2.Bundle(objects=bundle_objects))
     print(bundles[0])
     print(bundles[1])
+    with open('out.txt', 'w') as f:
+        print(bundles[0], file=f)
 
 
 

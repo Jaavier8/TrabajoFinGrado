@@ -10,8 +10,8 @@ public class MockDataFiller {
 
 	public static void main(String[] args) {
 		List<STIXObject> bundleObjects = new ArrayList<STIXObject>();
-		Bundle bundle = new Bundle("bundle--5ee82b5d-0278-4ae1-844e-28fda7af943c",bundleObjects);
-		BundleDAOImpl.getInstance().create(bundle);
+		//Bundle bundle = new Bundle("bundle--5ee82b5d-0278-4ae1-844e-28fda7af943c", "bundle", bundleObjects);
+		//BundleDAOImpl.getInstance().create(bundle);
 	}
 
 }

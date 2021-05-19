@@ -10,11 +10,10 @@ import javax.persistence.UniqueConstraint;
 @Entity
 @Table(name = "relationships", uniqueConstraints = @UniqueConstraint(columnNames = {"source_ref", "target_ref"}))
 public class Relationship extends STIXObject implements Serializable{
-	@Column(nullable = false, unique = true)
 	private String relationship_type;
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String source_ref;
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String target_ref;
 	private static final long serialVersionUID = 1L;
 	

@@ -19,6 +19,6 @@
                 <mapping class="es.upm.dit.tfg.model.Indicator" />
                 <mapping class="es.upm.dit.tfg.model.Campaign" />
                 <mapping class="es.upm.dit.tfg.model.Bundle" />
-                
+                <mapping class="es.upm.dit.tfg.model.ExternalReference" />                
         </session-factory>
 </hibernate-configuration>
