@@ -16,6 +16,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "campaigns")
 public class Campaign extends STIXObject implements Serializable{
+	@Column(columnDefinition = "varchar(max)")
 	private String name;
 	@Column(columnDefinition = "varchar(max)")
 	private String description;

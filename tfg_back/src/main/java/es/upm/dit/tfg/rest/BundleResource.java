@@ -52,6 +52,7 @@ public class BundleResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response createBundle(String JSONBodyString) throws URISyntaxException {
+		System.out.println(JSONBodyString);
 		JSONObject jsonBody = new JSONObject(JSONBodyString);
 		String type = jsonBody.getString("type");
 		String id = jsonBody.getString("id");

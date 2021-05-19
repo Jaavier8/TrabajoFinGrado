@@ -1,7 +1,9 @@
+import subprocess
 import os
 import otx_misp
 import time
 import stix2
+import requests
 from datetime import datetime
 
 import json
@@ -13,6 +15,15 @@ API_KEY = "1867b144115ca34d2e4f99035863f257db611a9662459233334b744dcb984487"
 # print(datetime.utcfromtimestamp(timenow).strftime('%Y-%m-%d %H:%M:%S'))
 # print(datetime.utcfromtimestamp(time24).strftime('%Y-%m-%d %H:%M:%S'))
 # print(datetime.fromtimestamp(time24).strftime('%Y-%m-%d %H:%M:%S'))
+
+def cmd(cmd):
+    """Executes the command in cmd and exits if it fails"""
+    #res = subprocess.call(cmd.split(' '), shell=True)
+    res = subprocess.call(cmd, shell=True)
+    if res != 0:
+        # logger.error(f'Error: The result was {res} when executing command "{cmd}".')
+        print_error(f'[-] Error: The result was {res} when executing command "{cmd}".')
+        sys.exit(1)
 
 #Cogemos la hora en la que se produjo la última descarga y la actualizamos
 def get_upload_datetime():
@@ -63,10 +74,18 @@ def alienvault_data2stix(data):
                                                     source_ref=ind["id"],
                                                     target_ref=campaign["id"]))
         bundles.append(stix2.Bundle(objects=bundle_objects))
-    print(bundles[0])
-    print(bundles[1])
-    with open('out.txt', 'w') as f:
-        print(bundles[0], file=f)
+    print(len(bundles))
+    for bundle in bundles:
+        with open('bundle.json', 'w') as f:
+            print(bundle, file=f)
+        with open('bundle.json') as f:
+            bundle = json.dumps(json.load(f))
+            print(type(bundle))
+            resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
+            print(resp)
+        cmd('rm bundle.json')
+
+
 
 
 

@@ -9,9 +9,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "indicators")
 public class Indicator extends STIXObject implements Serializable{
+	@Column(columnDefinition = "varchar(max)")
 	private String name;
+	@Column(columnDefinition = "varchar(max)")
 	private String description;
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String pattern;
 	private String pattern_type;
 	private String pattern_version;
