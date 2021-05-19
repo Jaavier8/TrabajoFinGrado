@@ -69,7 +69,7 @@ public class IndicatorDAOImpl implements IndicatorDAO{
 		List<Indicator> allIndicators = new ArrayList<Indicator>();
 		Session session = SessionFactoryService.get().openSession();
 		session.beginTransaction();
-		allIndicators.addAll(session.createQuery("from Indicator").list());
+		allIndicators.addAll(session.createQuery("from Indicator i where i.fk_id_bundle=null").list());
 		session.getTransaction().commit();
 		session.close();
 		return allIndicators;

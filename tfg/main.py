@@ -2,6 +2,7 @@
 import subprocess
 import sys, os
 import json
+import requests
 
 from bad_ips.get_badips import get_badips
 from ssl_ips.get_sslips import get_sslips
@@ -39,73 +40,73 @@ def cmd(cmd):
 
 ################################
 
-# #BAD IPS
-# print('[*] Downloading bad IPs')
-# bad_ips = get_badips()
-# print_ok('[+] IPs downloaded')
-# print_result('Number of bad IPs:' + str(len(bad_ips['ips'])))
-# print_result('Number of bad subnets:' + str(len(bad_ips['subnets'])))
-# print('\n')
-#
-# print('[*] Converting to stix objects')
-# bad_ips_stix = convert2stix(bad_ips['ips'],"ips")
-# bad_subnets_stix = convert2stix(bad_ips['subnets'],"subnets")
-# print_ok('[+] Conversion completed')
-# print_result('Number of bad IPs:' + str(len(bad_ips_stix)))
-# print_result('Number of bad subnets:' + str(len(bad_subnets_stix)))
-# print('\n')
-#
-# #SSL IPS
-# print('[*] Downloading IPs with malicious certificate (SSL)')
-# ssl_ips = get_sslips()
-# print_ok('[+] IPs downloaded')
-# print_result('Number of malicious IPs:' + str(len(ssl_ips)))
-# print('\n')
-#
-# print('[*] Converting to stix objects')
-# ssl_ips_stix = convert2stix(ssl_ips,"sslips")
-# print_ok('[+] Conversion completed')
-# print_result('Number of malicious IPs:' + str(len(ssl_ips_stix)))
-# print('\n')
-#
-# #SSL CERTIFICATES HASHES
-# print('[*] Downloading hashes of malicious certificates (SSL)')
-# ssl_hash = get_sslhash()
-# print_ok('[+] Hashes downloaded')
-# print_result('Number of hashes:' + str(len(ssl_hash)))
-# print('\n')
-#
-# print('[*] Converting to stix objects')
-# ssl_hash_stix = convert2stix(ssl_hash,"sslhash")
-# print_ok('[+] Conversion completed')
-# print_result('Number of hashes:' + str(len(ssl_hash_stix)))
-# print('\n')
-#
-# #BAD DOMAINS
-# print('[*] Downloading bad domains')
-# bad_domains = get_baddomains()
-# print_ok('[+] Domains downloaded')
-# print_result('Number of bad domains:' + str(len(bad_domains)))
-# print('\n')
-#
-# print('[*] Converting to stix objects')
-# bad_domains_stix = convert2stix(bad_domains,"baddomains")
-# print_ok('[+] Conversion completed')
-# print_result('Number of bad domains:' + str(len(bad_domains_stix)))
-# print('\n')
-#
-# #MALWARE HASHES
-# print('[*] Downloading malware hashes')
-# malware_hash = get_malwarehash()
-# print_ok('[+] Hashes downloaded')
-# print_result('Number of malware hashes:' + str(len(malware_hash)))
-# print('\n')
-#
-# print('[*] Converting to stix objects')
-# malware_hash_stix = convert2stix(malware_hash,"malwarehash")
-# print_ok('[+] Conversion completed')
-# print_result('Number of malware hashes:' + str(len(malware_hash_stix)))
-# print('\n')
+#BAD IPS
+print('[*] Downloading bad IPs')
+bad_ips = get_badips()
+print_ok('[+] IPs downloaded')
+print_result('Number of bad IPs:' + str(len(bad_ips['ips'])))
+print_result('Number of bad subnets:' + str(len(bad_ips['subnets'])))
+print('\n')
+
+print('[*] Converting to stix objects')
+bad_ips_stix = convert2stix(bad_ips['ips'],"ips")
+bad_subnets_stix = convert2stix(bad_ips['subnets'],"subnets")
+print_ok('[+] Conversion completed')
+print_result('Number of bad IPs:' + str(len(bad_ips_stix)))
+print_result('Number of bad subnets:' + str(len(bad_subnets_stix)))
+print('\n')
+
+#SSL IPS
+print('[*] Downloading IPs with malicious certificate (SSL)')
+ssl_ips = get_sslips()
+print_ok('[+] IPs downloaded')
+print_result('Number of malicious IPs:' + str(len(ssl_ips)))
+print('\n')
+
+print('[*] Converting to stix objects')
+ssl_ips_stix = convert2stix(ssl_ips,"sslips")
+print_ok('[+] Conversion completed')
+print_result('Number of malicious IPs:' + str(len(ssl_ips_stix)))
+print('\n')
+
+#SSL CERTIFICATES HASHES
+print('[*] Downloading hashes of malicious certificates (SSL)')
+ssl_hash = get_sslhash()
+print_ok('[+] Hashes downloaded')
+print_result('Number of hashes:' + str(len(ssl_hash)))
+print('\n')
+
+print('[*] Converting to stix objects')
+ssl_hash_stix = convert2stix(ssl_hash,"sslhash")
+print_ok('[+] Conversion completed')
+print_result('Number of hashes:' + str(len(ssl_hash_stix)))
+print('\n')
+
+#BAD DOMAINS
+print('[*] Downloading bad domains')
+bad_domains = get_baddomains()
+print_ok('[+] Domains downloaded')
+print_result('Number of bad domains:' + str(len(bad_domains)))
+print('\n')
+
+print('[*] Converting to stix objects')
+bad_domains_stix = convert2stix(bad_domains,"baddomains")
+print_ok('[+] Conversion completed')
+print_result('Number of bad domains:' + str(len(bad_domains_stix)))
+print('\n')
+
+#MALWARE HASHES
+print('[*] Downloading malware hashes')
+malware_hash = get_malwarehash()
+print_ok('[+] Hashes downloaded')
+print_result('Number of malware hashes:' + str(len(malware_hash)))
+print('\n')
+
+print('[*] Converting to stix objects')
+malware_hash_stix = convert2stix(malware_hash,"malwarehash")
+print_ok('[+] Conversion completed')
+print_result('Number of malware hashes:' + str(len(malware_hash_stix)))
+print('\n')
 
 #DISPOSABLE EMAIL DOMAINS
 print('[*] Downloading disposable email domains')
@@ -119,4 +120,25 @@ email_domains_stix = convert2stix(email_domains,"emaildomains")
 print_ok('[+] Conversion completed')
 print_result('Number of disposable domains:' + str(len(email_domains_stix)))
 print('\n')
-print(json.dumps(email_domains_stix[0]))
+print(type(email_domains_stix[0]))
+print(type(json.dumps(email_domains_stix[0])))
+
+##################################
+#########SEND TO DATABASE#########
+##################################
+print('[*] Sending data to a database')
+headers = {'Content-type':'application/json', 'Accept':'application/json'}
+for indicator in email_domains_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in malware_hash_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in bad_domains_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in ssl_hash_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in ssl_ips_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in bad_ips_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+for indicator in bad_subnets_stix:
+    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)

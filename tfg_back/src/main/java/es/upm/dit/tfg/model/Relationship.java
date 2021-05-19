@@ -17,6 +17,10 @@ public class Relationship extends STIXObject implements Serializable{
 	private String target_ref;
 	private static final long serialVersionUID = 1L;
 	
+	public Relationship() {
+		
+	}
+	
 	public Relationship(String relationship_type, String source_ref, String target_ref) {
 		super();
 		this.relationship_type = relationship_type;

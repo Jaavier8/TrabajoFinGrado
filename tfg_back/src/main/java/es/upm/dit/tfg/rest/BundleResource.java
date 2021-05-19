@@ -42,17 +42,9 @@ public class BundleResource {
 		return BundleDAOImpl.getInstance().readAll();
 	}
 	
-//	@GET
-//	@Path("{pattern}")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	public STIX readSTIX (@PathParam("pattern") String pattern) {
-//		return STIXDAOImpl.getInstance().read(pattern);
-//	}
-	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response createBundle(String JSONBodyString) throws URISyntaxException {
-		System.out.println(JSONBodyString);
 		JSONObject jsonBody = new JSONObject(JSONBodyString);
 		String type = jsonBody.getString("type");
 		String id = jsonBody.getString("id");
@@ -83,10 +75,10 @@ public class BundleResource {
 		
 		Bundle bundle = BundleDAOImpl.getInstance().create(new Bundle(id, type, indicators, relationships, campaign));
 	    if (bundle != null) {
-	            URI uri = new URI("/TFG-SERVICE/rest/bundle/" + bundle.getIdentifier());
+	            URI uri = new URI("/TFG/rest/bundle" + bundle.getIdentifier());
 	            return Response.created(uri).build();
 	    }
-	    return Response.status(Response.Status.NOT_FOUND).build();
+	    return Response.status(Response.Status.CONFLICT).build();
 	}
 
 	private Campaign parser2Campaign(JSONObject campaign) {
