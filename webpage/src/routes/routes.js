@@ -9,6 +9,8 @@ import {
 // Local imports
 import MainPage from "../pages/MainPage";
 import DownloadPage from "../pages/DownloadPage";
+import ThreatPage from "../pages/ThreatPage";
+import OntologyPage from "../pages/OntologyPage";
 
 function Routes(props) {
 
@@ -20,6 +22,12 @@ function Routes(props) {
         </Route>
         <Route path="/download" >
           <DownloadPage />
+        </Route>
+        <Route path="/threat" >
+          <ThreatPage />
+        </Route>
+        <Route path="/ontology" >
+          <OntologyPage />
         </Route>
       </Switch>
     </BrowserRouter>

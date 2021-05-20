@@ -1,0 +1,16 @@
+nav.navbar-container.navbar.navbar-expand.navbar-dark.bg-dark {
+    @include flexCenter(row);
+    @include nordButton();
+    padding: 0;
+    padding-left: 0.5%;
+    background-color: $dark900 !important;
+}
+
+.mr-auto {
+  @include flexRight(row);
+}
+
+.prueba {
+  @include nordButton();
+  align-self: flex-end;
+}

@@ -80,7 +80,6 @@ public class OWLJena {
 			int pos=0;
 			for(Indicator ind: bundle.getIndicators()) {
 				individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator:" + ind.getIdentifier(), indicatorClass));
-				//Individual individuals.get(pos) = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator", indicatorClass);
 				individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(ind.getType()));
 				individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(ind.getSpec_version()));
 				individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(ind.getId()));

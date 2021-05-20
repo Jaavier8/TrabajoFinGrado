@@ -1,4 +1,4 @@
-.main-page-container {
+.download-page-container {
     @include flexCenter(column);
     margin: 0 auto;
     margin-top: 48px;
@@ -18,18 +18,19 @@
         }
     }
 
-    .description {
-        text-align: center;
-        margin-top: 24px;
-        font-weight: normal;
+    .cards-container {
+        @include nordButton();
+        @include flexCenter(row);
+        margin: 20px;
     }
 
-    .buttons-container {
-        @include flexCenter(row);
-        @include nordButton();
+    .card-body {
+        background-color: $dark400;
+        text-align: center;
+    }
 
-        margin-top: 24px;
-        margin-bottom: 24px;
+    .card {
+      background-color: $dark400;
     }
 
 }
