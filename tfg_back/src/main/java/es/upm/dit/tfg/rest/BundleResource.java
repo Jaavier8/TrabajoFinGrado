@@ -1,5 +1,6 @@
 package es.upm.dit.tfg.rest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import es.upm.dit.tfg.aux.OWLJena;
 import es.upm.dit.tfg.dao.BundleDAOImpl;
 import es.upm.dit.tfg.dao.CampaignDAOImpl;
 import es.upm.dit.tfg.dao.ExternalReferenceDAOImpl;
@@ -38,7 +40,9 @@ public class BundleResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Bundle> readAll () {
+	public List<Bundle> readAll () throws IOException{
+		OWLJena test = new OWLJena();
+		test.createOWL(BundleDAOImpl.getInstance().readAll());
 		return BundleDAOImpl.getInstance().readAll();
 	}
 	
