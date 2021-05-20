@@ -1,0 +1,13 @@
+// Import everything here so there is no multiple files to import
+
+// Import bootstrap scss files
+@import "~bootstrap/scss/bootstrap";
+
+// Import to be used through the entire scss files such
+// as variables and functions
+@import "./variables";
+@import "./functions";
+@import "./app";
+
+// Imports where we might use the above
+@import "./mainpage";

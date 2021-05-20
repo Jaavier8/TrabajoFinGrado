@@ -1,0 +1,45 @@
+.main-page-container {
+    @include flexCenter(column);
+    margin: 0 auto;
+    margin-top: 48px;
+    width: 100vw;
+
+    h1 {
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .centered-div {
+        @include flexCenter(column);
+
+        // This is for phone sized
+        @media only screen and (max-width: 750px) {
+            width: 70vw;
+        }
+    }
+
+    .logo {
+        @include imageCenter();
+        display: block;
+        margin: auto;
+        height: 192px;
+        width: 192px;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    .description {
+        text-align: center;
+        margin-top: 24px;
+        font-weight: normal;
+    }
+
+    .buttons-container {
+        @include flexCenter(row);
+        @include nordButton();
+
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+}

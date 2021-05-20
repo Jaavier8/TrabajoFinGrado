@@ -1,0 +1,42 @@
+// COLOR PALETTE 1 by by https://mycolor.space/?hex=%2310BD9E&sub=1
+
+// Polar night from Nord Theme
+$dark900: #2E3440;
+$dark700: #3B4252;
+$dark500: #434C5E;
+$dark400: #4C566A;
+
+
+// Snow storm from Nord Theme
+$white900: #D8DEE9;
+$white700: #E5E9F0;
+$white500: #ECEFF4;
+
+
+$mintShade700: #10BD9E;
+$mintShade500: #63CF97;
+$mintShade400: #99E091;
+$mintShade200: #CCEF8F;
+
+$clearMint: #EBFDF8;
+$commonMint: #10BD9E;
+$darkMint: #5C9D8C;
+$desaturatedMint: #D4E7DA;
+$saturatedLightMint: #C6FCEC;
+
+$orange: #FFA17A;
+$purple: #959DFF;
+
+// ASSIGNATION
+
+$background: $dark900;   // Background color
+$foreground: $clearMint;	 // Foreground color
+
+$comment: $clearMint;	    // Comment color
+
+$alert: $purple;
+$success: $commonMint;
+$warning: $orange;
+
+$softsuccess: #1df0ca;
+$softwarning: #ffac8a;
