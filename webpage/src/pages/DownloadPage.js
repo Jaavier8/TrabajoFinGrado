@@ -20,7 +20,7 @@ function DownloadPage(props) {
             <CardDeck>
               <Card>
                 <Card.Body>
-                  <Card.Title>Alumnos</Card.Title>
+                  <Card.Title>Análisis de amenazas</Card.Title>
                   <Card.Text>
                     En esta sección podrá ver y descargar aquellos indicadores en los que esté interesado para realizar un análisis de amenazas.
                   </Card.Text>
@@ -36,7 +36,7 @@ function DownloadPage(props) {
               </Card>
               <Card>
                 <Card.Body>
-                  <Card.Title>Profesores</Card.Title>
+                  <Card.Title>Datos ontología</Card.Title>
                   <Card.Text>
                     En esta sección podrá ver las campañas de ataques que se están llevando a cabo en el momoento, así como sus indicadores. También podrá descargar un archivo OWL con estos datos introducidos en una ontología STIX.
                   </Card.Text>

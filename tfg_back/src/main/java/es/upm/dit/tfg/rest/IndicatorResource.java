@@ -42,16 +42,16 @@ public class IndicatorResource {
 	@Path("download")
 	public List<Indicator> read(String JSONBodyString) throws URISyntaxException {
 		JSONObject jsonBody = new JSONObject(JSONBodyString);
-		String domain = jsonBody.getString("domain");
-		String ipv4 = jsonBody.getString("ipv4");
-		String email = jsonBody.getString("email");
-		String hash = jsonBody.getString("hash");
+		Boolean domain = jsonBody.getBoolean("domain");
+		Boolean ipv4 = jsonBody.getBoolean("ipv4");
+		Boolean email = jsonBody.getBoolean("email");
+		Boolean hash = jsonBody.getBoolean("hash");
 		
 		List<String> accepted = new ArrayList<String>();
-		if(domain.equals("true")) accepted.add("domain");
-		if(ipv4.equals("true")) accepted.add("ipv4");
-		if(email.equals("true")) accepted.add("email");
-		if(hash.equals("true")) accepted.add("hash");
+		if(domain) accepted.add("domain");
+		if(ipv4) accepted.add("ipv4");
+		if(email) accepted.add("email");
+		if(hash) accepted.add("hash");
 		
 		List<Indicator> allIndicators = getIndicators();
 		
@@ -59,37 +59,7 @@ public class IndicatorResource {
 		
 		List<Indicator> filtered = getIndicatorsFiltered(allIndicators, accepted);
 		
-		
-		List<Indicator> indicators = new ArrayList<Indicator>();
-		List<Relationship> relationships = new ArrayList<Relationship>();
-		JSONArray objects = jsonBody.getJSONArray("objects");
-				
-		for (int i = 1; i < objects.length(); i++) {
-		    try {
-		        JSONObject jsonObject = objects.getJSONObject(i);
-		        if (jsonObject.getString("type").equals("indicator")) {
-		        	Indicator ind = parser2Indicator(jsonObject);
-		        	IndicatorDAOImpl.getInstance().create(ind);
-		            indicators.add(ind);
-		        } else if (jsonObject.getString("type").equals("relationship")) {
-		        	Relationship rel = parser2Relationship(jsonObject);
-		        	RelationshipDAOImpl.getInstance().create(rel);
-		        	relationships.add(rel);
-		        }
-		    } catch (JSONException e) {
-		        e.printStackTrace();
-		    }
-		}
-		
-		Campaign campaign = parser2Campaign(objects.getJSONObject(0));
-		CampaignDAOImpl.getInstance().create(campaign);
-		
-		Bundle bundle = BundleDAOImpl.getInstance().create(new Bundle(id, type, indicators, relationships, campaign));
-	    if (bundle != null) {
-	            URI uri = new URI("/TFG/rest/bundle" + bundle.getIdentifier());
-	            return Response.created(uri).build();
-	    }
-	    return Response.status(Response.Status.CONFLICT).build();
+		return filtered;
 	}
 	
 	@POST
@@ -125,5 +95,6 @@ public class IndicatorResource {
 				if(ind.getPattern().contains(s)) result.add(ind);
 			}
 		}
+		return result;
 	}
 }

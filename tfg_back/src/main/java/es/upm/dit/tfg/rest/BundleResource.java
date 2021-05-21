@@ -40,10 +40,22 @@ public class BundleResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Bundle> readAll () throws IOException{
+	public List<Bundle> readAll() throws IOException{
 		OWLJena test = new OWLJena();
 		test.createOWL(BundleDAOImpl.getInstance().readAll());
 		return BundleDAOImpl.getInstance().readAll();
+	}
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("names")
+	public List<String> readNames() throws IOException{
+		List<String> result = new ArrayList<String>();
+		List<Campaign> campaigns = CampaignDAOImpl.getInstance().readAll();
+		for(Campaign c: campaigns) {
+			result.add(c.getName());
+		}
+		return result;
 	}
 	
 	@POST
