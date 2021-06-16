@@ -40,6 +40,7 @@ def get_upload_datetime():
 def get_alienvault_data():
     download_from_datetime = get_upload_datetime()
     data = otx_misp.get_pulses(API_KEY, from_timestamp=download_from_datetime)
+    print(data)
     return data
 
 def alienvault_data2stix(data):
@@ -47,6 +48,7 @@ def alienvault_data2stix(data):
     #Every pulse is a bundle
     for pulse in data:
         bundle_objects = []
+        malware_objects = []
         #Creating external references for the campaign
         references = []
         for reference in pulse["references"]:
@@ -62,7 +64,16 @@ def alienvault_data2stix(data):
                                     labels=pulse["tags"])
         bundle_objects.append(campaign)
 
-        #Creating indicators and relationships with campaign
+        #Creating malware
+        for malware_family in pulse["malware_families"]:
+            malware = stix2.Malware(name=malware_family,
+                                    is_family=True)
+
+            print(malware)
+            bundle_objects.append(malware)
+            malware_objects.append(malware)
+
+        #Creating indicators and relationships with campaign and Malware
         for indicator in pulse["indicators"]:
             ind = stix2.Indicator(name=indicator["title"],
                                     description=indicator["description"],
@@ -73,17 +84,23 @@ def alienvault_data2stix(data):
             bundle_objects.append(stix2.Relationship(relationship_type="indicates",
                                                     source_ref=ind["id"],
                                                     target_ref=campaign["id"]))
+            for malware in malware_objects:
+                bundle_objects.append(stix2.Relationship(relationship_type="indicates",
+                                                        source_ref=ind["id"],
+                                                        target_ref=malware["id"]))
+
+        #List of bundles
         bundles.append(stix2.Bundle(objects=bundle_objects))
     print(len(bundles))
-    for bundle in bundles:
-        with open('bundle.json', 'w') as f:
-            print(bundle, file=f)
-        with open('bundle.json') as f:
-            bundle = json.dumps(json.load(f))
-            print(type(bundle))
-            resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
-            print(resp)
-        cmd('rm bundle.json')
+    # for bundle in bundles:
+    #     with open('bundle.json', 'w') as f:
+    #         print(bundle, file=f)
+    #     with open('bundle.json') as f:
+    #         bundle = json.dumps(json.load(f))
+    #         print(type(bundle))
+    #         resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
+    #         print(resp)
+    #     cmd('rm bundle.json')
 
 
 

@@ -123,22 +123,32 @@ print('\n')
 print(type(email_domains_stix[0]))
 print(type(json.dumps(email_domains_stix[0])))
 
+print(bad_ips_stix[0])
+print(bad_subnets_stix[0])
+print(ssl_ips_stix[0])
+print(ssl_hash_stix[0])
+print(bad_domains_stix[0])
+print(malware_hash_stix[0])
+print(malware_hash_stix[1])
+print(malware_hash_stix[2])
+print(email_domains_stix[0])
+
 ##################################
 #########SEND TO DATABASE#########
 ##################################
-print('[*] Sending data to a database')
-headers = {'Content-type':'application/json', 'Accept':'application/json'}
-for indicator in email_domains_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in malware_hash_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_domains_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in ssl_hash_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in ssl_ips_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_ips_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_subnets_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# print('[*] Sending data to a database')
+# headers = {'Content-type':'application/json', 'Accept':'application/json'}
+# for indicator in email_domains_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in malware_hash_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_domains_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in ssl_hash_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in ssl_ips_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_ips_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_subnets_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
