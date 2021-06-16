@@ -18,6 +18,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import es.upm.dit.tfg.model.Bundle;
 import es.upm.dit.tfg.model.Campaign;
 import es.upm.dit.tfg.model.Indicator;
+import es.upm.dit.tfg.model.Malware;
 import es.upm.dit.tfg.model.Relationship;
 
 public class OWLJena {
@@ -25,6 +26,7 @@ public class OWLJena {
 	private static OntClass bundleClass;
 	private static OntClass relationshipClass;
 	private static OntClass campaignClass;
+	private static OntClass malwareClass;
 	private static OntModel model;
 	
 	private static DatatypeProperty type;
@@ -42,10 +44,15 @@ public class OWLJena {
 	private static DatatypeProperty source_ref;
 	private static DatatypeProperty target_ref;
 	private static DatatypeProperty labels;
+	private static DatatypeProperty indicates;
+	private static DatatypeProperty is_family;
+	private static DatatypeProperty isUsedBy;
+	private static DatatypeProperty uses;
+	private static DatatypeProperty isIndicatedBy;
 
 	
 	public OWLJena() {
-		this.model = (OntModel) ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM).read("file:///home/kali/Documents/TFG/cyberthreat_STIX.owl", "RDF/XML");
+		this.model = (OntModel) ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM).read("file:///home/kali/Documents/TFG/ontology.owl", "RDF/XML");
 		for (Iterator<OntClass> i = model.listClasses();i.hasNext();){
 			OntClass cls = i.next();
 			if(cls.getLocalName() != null && cls.getLocalName().equals("Indicator"))
@@ -56,6 +63,8 @@ public class OWLJena {
 				relationshipClass = cls;
 			if(cls.getLocalName() != null && cls.getLocalName().equals("Campaign"))
 				campaignClass = cls;
+			if(cls.getLocalName() != null && cls.getLocalName().equals("Malware"))
+				malwareClass = cls;
 		}
 		type = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#type");
 		spec_version = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#spec_version");
@@ -72,52 +81,86 @@ public class OWLJena {
 		source_ref = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#source_ref");
 		target_ref = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#target_ref");
 		labels = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#labels");
+		indicates = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#indicates");
+		is_family = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2020/2/cibersituational-ontology#is_family");
+		isUsedBy = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#isUsedBy");
+		uses = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#uses");
+		isIndicatedBy = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#isIndicatedBy");
 	}
 	
 	public File createOWL(List<Bundle> bundles) throws IOException {
 		for(Bundle bundle: bundles) {
-			List<Individual> individuals = new ArrayList<Individual>();
-			int pos=0;
+			List<Individual> malwares = new ArrayList<Individual>();
+			List<Individual> indicators = new ArrayList<Individual>();
+			List<Individual> relationships = new ArrayList<Individual>();
 			Campaign c = bundle.getCampaign();
-			individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Campaign:" + c.getIdentifier(), campaignClass));
-			individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(c.getType()));
-			individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(c.getSpec_version()));
-			individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(c.getId()));
-			individuals.get(pos).setPropertyValue(created, model.createTypedLiteral(c.getCreated()));
-			individuals.get(pos).setPropertyValue(modified, model.createTypedLiteral(c.getModified()));
-			individuals.get(pos).setPropertyValue(name, model.createTypedLiteral(c.getName()));
-			individuals.get(pos).setPropertyValue(description, model.createTypedLiteral(c.getDescription()));
-			individuals.get(pos).setPropertyValue(labels, model.createTypedLiteral(c.getLabels()));
+			System.out.println(c.getType());
+			Individual campaign = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Campaign:" + c.getIdentifier(), campaignClass);
+			campaign.setPropertyValue(type, model.createTypedLiteral(c.getType()));
+			campaign.setPropertyValue(spec_version, model.createTypedLiteral(c.getSpec_version()));
+			campaign.setPropertyValue(id, model.createTypedLiteral(c.getId()));
+			campaign.setPropertyValue(created, model.createTypedLiteral(c.getCreated()));
+			campaign.setPropertyValue(modified, model.createTypedLiteral(c.getModified()));
+			campaign.setPropertyValue(name, model.createTypedLiteral(c.getName()));
+			campaign.setPropertyValue(description, model.createTypedLiteral(c.getDescription()));
+			campaign.setPropertyValue(labels, model.createTypedLiteral(c.getLabels()));
+			int pos=0;
+			for(Malware mal: bundle.getMalware()) {
+				malwares.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Malware:" + mal.getIdentifier(), malwareClass));
+				malwares.get(pos).setPropertyValue(type, model.createTypedLiteral(mal.getType()));
+				malwares.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(mal.getSpec_version()));
+				malwares.get(pos).setPropertyValue(id, model.createTypedLiteral(mal.getId()));
+				malwares.get(pos).setPropertyValue(created, model.createTypedLiteral(mal.getCreated()));
+				malwares.get(pos).setPropertyValue(modified, model.createTypedLiteral(mal.getModified()));
+				malwares.get(pos).setPropertyValue(name, model.createTypedLiteral(mal.getName()));
+				malwares.get(pos).setPropertyValue(is_family, model.createTypedLiteral(mal.getIs_family()));
+				pos++;
+			}
+			pos=0;
 			for(Indicator ind: bundle.getIndicators()) {
-				individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator:" + ind.getIdentifier(), indicatorClass));
-				individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(ind.getType()));
-				individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(ind.getSpec_version()));
-				individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(ind.getId()));
-				individuals.get(pos).setPropertyValue(created, model.createTypedLiteral(ind.getCreated()));
-				individuals.get(pos).setPropertyValue(modified, model.createTypedLiteral(ind.getModified()));
-				individuals.get(pos).setPropertyValue(name, model.createTypedLiteral(ind.getName()));
-				individuals.get(pos).setPropertyValue(description, model.createTypedLiteral(ind.getDescription()));
-				individuals.get(pos).setPropertyValue(pattern, model.createTypedLiteral(ind.getPattern()));
-				individuals.get(pos).setPropertyValue(pattern_type, model.createTypedLiteral(ind.getPattern_type()));
-				individuals.get(pos).setPropertyValue(pattern_version, model.createTypedLiteral(ind.getPattern_version()));
-				individuals.get(pos).setPropertyValue(valid_from, model.createTypedLiteral(ind.getValid_from()));
+				indicators.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator:" + ind.getIdentifier(), indicatorClass));
+				indicators.get(pos).setPropertyValue(type, model.createTypedLiteral(ind.getType()));
+				indicators.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(ind.getSpec_version()));
+				indicators.get(pos).setPropertyValue(id, model.createTypedLiteral(ind.getId()));
+				indicators.get(pos).setPropertyValue(created, model.createTypedLiteral(ind.getCreated()));
+				indicators.get(pos).setPropertyValue(modified, model.createTypedLiteral(ind.getModified()));
+				indicators.get(pos).setPropertyValue(name, model.createTypedLiteral(ind.getName()));
+				indicators.get(pos).setPropertyValue(description, model.createTypedLiteral(ind.getDescription()));
+				indicators.get(pos).setPropertyValue(pattern, model.createTypedLiteral(ind.getPattern()));
+				indicators.get(pos).setPropertyValue(pattern_type, model.createTypedLiteral(ind.getPattern_type()));
+				indicators.get(pos).setPropertyValue(pattern_version, model.createTypedLiteral(ind.getPattern_version()));
+				indicators.get(pos).setPropertyValue(valid_from, model.createTypedLiteral(ind.getValid_from()));
+				indicators.get(pos).setPropertyValue(indicates, campaign);
+				for (Individual mal: malwares) {
+					indicators.get(pos).setPropertyValue(indicates, mal);
+				}
 				pos++;
 			}
+			pos=0;
 			for(Relationship rel: bundle.getRelationships()) {
-				individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Relationship:" + rel.getIdentifier(), relationshipClass));
-				individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(rel.getType()));
-				individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(rel.getSpec_version()));
-				individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(rel.getId()));
-				individuals.get(pos).setPropertyValue(created, model.createTypedLiteral(rel.getCreated()));
-				individuals.get(pos).setPropertyValue(modified, model.createTypedLiteral(rel.getModified()));
-				individuals.get(pos).setPropertyValue(relationship_type, model.createTypedLiteral(rel.getRelationship_type()));
-				individuals.get(pos).setPropertyValue(source_ref, model.createTypedLiteral(rel.getSource_ref()));
-				individuals.get(pos).setPropertyValue(target_ref, model.createTypedLiteral(rel.getTarget_ref()));
+				relationships.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Relationship:" + rel.getIdentifier(), relationshipClass));
+				relationships.get(pos).setPropertyValue(type, model.createTypedLiteral(rel.getType()));
+				relationships.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(rel.getSpec_version()));
+				relationships.get(pos).setPropertyValue(id, model.createTypedLiteral(rel.getId()));
+				relationships.get(pos).setPropertyValue(created, model.createTypedLiteral(rel.getCreated()));
+				relationships.get(pos).setPropertyValue(modified, model.createTypedLiteral(rel.getModified()));
+				relationships.get(pos).setPropertyValue(relationship_type, model.createTypedLiteral(rel.getRelationship_type()));
+				relationships.get(pos).setPropertyValue(source_ref, model.createTypedLiteral(rel.getSource_ref()));
+				relationships.get(pos).setPropertyValue(target_ref, model.createTypedLiteral(rel.getTarget_ref()));
 				pos++;
 			}
-			
+			for(Individual mal: malwares) {
+				mal.setPropertyValue(isUsedBy, campaign);
+				campaign.setPropertyValue(uses, mal);
+				for(Individual ind: indicators) {
+					mal.setPropertyValue(isIndicatedBy, ind);
+				}
+			}
+			for(Individual ind: indicators) {
+				campaign.setPropertyValue(isIndicatedBy, ind);
+			}
 		}
-		File file = new File("/home/kali/Documents/TFG/cyberthreat_STIX_test.owl");
+		File file = new File("/home/kali/Documents/TFG/ontology_test.owl");
 		if (!file.exists()){
 		     file.createNewFile();
 		}
