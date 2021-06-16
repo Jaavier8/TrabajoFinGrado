@@ -84,6 +84,7 @@ public class BundleResource {
 		        	RelationshipDAOImpl.getInstance().create(rel);
 		        	relationships.add(rel);
 		        } else if (jsonObject.getString("type").equals("malware")) {
+		        	System.out.println(jsonObject);
 		        	Malware mal = parser2Malware(jsonObject);
 		        	MalwareDAOImpl.getInstance().create(mal);
 		        	malwares.add(mal);

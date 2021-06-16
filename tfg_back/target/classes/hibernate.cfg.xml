@@ -19,6 +19,7 @@
                 <mapping class="es.upm.dit.tfg.model.Indicator" />
                 <mapping class="es.upm.dit.tfg.model.Campaign" />
                 <mapping class="es.upm.dit.tfg.model.Bundle" />
-                <mapping class="es.upm.dit.tfg.model.ExternalReference" />                
+                <mapping class="es.upm.dit.tfg.model.ExternalReference" />
+                <mapping class="es.upm.dit.tfg.model.Malware" />                
         </session-factory>
 </hibernate-configuration>

@@ -92,15 +92,15 @@ def alienvault_data2stix(data):
         #List of bundles
         bundles.append(stix2.Bundle(objects=bundle_objects))
     print(len(bundles))
-    # for bundle in bundles:
-    #     with open('bundle.json', 'w') as f:
-    #         print(bundle, file=f)
-    #     with open('bundle.json') as f:
-    #         bundle = json.dumps(json.load(f))
-    #         print(type(bundle))
-    #         resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
-    #         print(resp)
-    #     cmd('rm bundle.json')
+    for bundle in bundles:
+        with open('bundle.json', 'w') as f:
+            print(bundle, file=f)
+        with open('bundle.json') as f:
+            bundle = json.dumps(json.load(f))
+            print(type(bundle))
+            resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
+            print(resp)
+        cmd('rm bundle.json')
 
 
 
