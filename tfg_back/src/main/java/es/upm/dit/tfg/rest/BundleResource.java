@@ -60,6 +60,18 @@ public class BundleResource {
 		return result;
 	}
 	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("campaigns")
+	public List<Campaign> readCampaigns() throws IOException{
+		List<String> result = new ArrayList<String>();
+		List<Campaign> campaigns = CampaignDAOImpl.getInstance().readAll();
+		for(Campaign c: campaigns) {
+			result.add(c.getName());
+		}
+		return CampaignDAOImpl.getInstance().readAll();
+	}
+	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response createBundle(String JSONBodyString) throws URISyntaxException {
@@ -103,6 +115,28 @@ public class BundleResource {
 	            return Response.created(uri).build();
 	    }
 	    return Response.status(Response.Status.CONFLICT).build();
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("jsondownload")
+	public List<Campaign> jsonDownload(String JSONBodyString) throws URISyntaxException {
+		JSONObject jsonBody = new JSONObject(JSONBodyString);
+		JSONArray names = jsonBody.getJSONArray("names");
+		List<String> namesList = new ArrayList<String>();
+		
+		List<Campaign> allCampaigns = CampaignDAOImpl.getInstance().readAll();
+		List<Campaign> filtered = new ArrayList<Campaign>();
+		
+		for (int i = 0; i < names.length(); i++) {
+			namesList.add(names.getString(i));
+		}
+		
+		for(Campaign c: allCampaigns) {
+				if(namesList.contains(c.getName())) filtered.add(c);
+		}
+		return filtered;
 	}
 
 	private Campaign parser2Campaign(JSONObject campaign) {

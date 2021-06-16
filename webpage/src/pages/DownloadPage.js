@@ -38,7 +38,7 @@ function DownloadPage(props) {
                 <Card.Body>
                   <Card.Title>Datos ontología</Card.Title>
                   <Card.Text>
-                    En esta sección podrá ver las campañas de ataques que se están llevando a cabo en el momoento, así como sus indicadores. También podrá descargar un archivo OWL con estos datos introducidos en una ontología STIX.
+                    En esta sección podrá ver las campañas de ataques que se están llevando a cabo en este momento, así como sus indicadores y las familias de malware con las que se relaciona. También podrá descargar un archivo OWL con estos datos introducidos en una ontología STIX.
                   </Card.Text>
                 </Card.Body>
                 <LinkContainer
