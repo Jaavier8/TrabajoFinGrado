@@ -78,6 +78,16 @@ public class OWLJena {
 		for(Bundle bundle: bundles) {
 			List<Individual> individuals = new ArrayList<Individual>();
 			int pos=0;
+			Campaign c = bundle.getCampaign();
+			individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Campaign:" + c.getIdentifier(), campaignClass));
+			individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(c.getType()));
+			individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(c.getSpec_version()));
+			individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(c.getId()));
+			individuals.get(pos).setPropertyValue(created, model.createTypedLiteral(c.getCreated()));
+			individuals.get(pos).setPropertyValue(modified, model.createTypedLiteral(c.getModified()));
+			individuals.get(pos).setPropertyValue(name, model.createTypedLiteral(c.getName()));
+			individuals.get(pos).setPropertyValue(description, model.createTypedLiteral(c.getDescription()));
+			individuals.get(pos).setPropertyValue(labels, model.createTypedLiteral(c.getLabels()));
 			for(Indicator ind: bundle.getIndicators()) {
 				individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator:" + ind.getIdentifier(), indicatorClass));
 				individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(ind.getType()));
@@ -105,16 +115,7 @@ public class OWLJena {
 				individuals.get(pos).setPropertyValue(target_ref, model.createTypedLiteral(rel.getTarget_ref()));
 				pos++;
 			}
-			Campaign c = bundle.getCampaign();
-			individuals.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Campaign:" + c.getIdentifier(), campaignClass));
-			individuals.get(pos).setPropertyValue(type, model.createTypedLiteral(c.getType()));
-			individuals.get(pos).setPropertyValue(spec_version, model.createTypedLiteral(c.getSpec_version()));
-			individuals.get(pos).setPropertyValue(id, model.createTypedLiteral(c.getId()));
-			individuals.get(pos).setPropertyValue(created, model.createTypedLiteral(c.getCreated()));
-			individuals.get(pos).setPropertyValue(modified, model.createTypedLiteral(c.getModified()));
-			individuals.get(pos).setPropertyValue(name, model.createTypedLiteral(c.getName()));
-			individuals.get(pos).setPropertyValue(description, model.createTypedLiteral(c.getDescription()));
-			individuals.get(pos).setPropertyValue(labels, model.createTypedLiteral(c.getLabels()));
+			
 		}
 		File file = new File("/home/kali/Documents/TFG/cyberthreat_STIX_test.owl");
 		if (!file.exists()){

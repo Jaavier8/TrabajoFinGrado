@@ -27,11 +27,13 @@ import es.upm.dit.tfg.dao.BundleDAOImpl;
 import es.upm.dit.tfg.dao.CampaignDAOImpl;
 import es.upm.dit.tfg.dao.ExternalReferenceDAOImpl;
 import es.upm.dit.tfg.dao.IndicatorDAOImpl;
+import es.upm.dit.tfg.dao.MalwareDAOImpl;
 import es.upm.dit.tfg.dao.RelationshipDAOImpl;
 import es.upm.dit.tfg.model.Bundle;
 import es.upm.dit.tfg.model.Campaign;
 import es.upm.dit.tfg.model.ExternalReference;
 import es.upm.dit.tfg.model.Indicator;
+import es.upm.dit.tfg.model.Malware;
 import es.upm.dit.tfg.model.Relationship;
 
 
@@ -65,6 +67,7 @@ public class BundleResource {
 		String type = jsonBody.getString("type");
 		String id = jsonBody.getString("id");
 		
+		List<Malware> malwares = new ArrayList<Malware>();
 		List<Indicator> indicators = new ArrayList<Indicator>();
 		List<Relationship> relationships = new ArrayList<Relationship>();
 		JSONArray objects = jsonBody.getJSONArray("objects");
@@ -80,6 +83,10 @@ public class BundleResource {
 		        	Relationship rel = parser2Relationship(jsonObject);
 		        	RelationshipDAOImpl.getInstance().create(rel);
 		        	relationships.add(rel);
+		        } else if (jsonObject.getString("type").equals("malware")) {
+		        	Malware mal = parser2Malware(jsonObject);
+		        	MalwareDAOImpl.getInstance().create(mal);
+		        	malwares.add(mal);
 		        }
 		    } catch (JSONException e) {
 		        e.printStackTrace();
@@ -89,7 +96,7 @@ public class BundleResource {
 		Campaign campaign = parser2Campaign(objects.getJSONObject(0));
 		CampaignDAOImpl.getInstance().create(campaign);
 		
-		Bundle bundle = BundleDAOImpl.getInstance().create(new Bundle(id, type, indicators, relationships, campaign));
+		Bundle bundle = BundleDAOImpl.getInstance().create(new Bundle(id, type, indicators, relationships, malwares, campaign));
 	    if (bundle != null) {
 	            URI uri = new URI("/TFG/rest/bundle" + bundle.getIdentifier());
 	            return Response.created(uri).build();
@@ -113,5 +120,11 @@ public class BundleResource {
 		Gson gson = new Gson();
 		Relationship r = gson.fromJson(relationship.toString(), Relationship.class);
 		return r;
+	}
+	
+	private Malware parser2Malware(JSONObject malware) {
+		Gson gson = new Gson();
+		Malware m = gson.fromJson(malware.toString(), Malware.class);
+		return m;
 	}
 }

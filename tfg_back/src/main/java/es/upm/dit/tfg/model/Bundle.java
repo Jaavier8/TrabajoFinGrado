@@ -26,6 +26,9 @@ public class Bundle implements Serializable{
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "fk_id_bundle")
 	private List<Relationship> relationships;
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "fk_id_bundle")
+	private List<Malware> malware;
 	@OneToOne
 	private Campaign campaign;
 	private static final long serialVersionUID = 1L;
@@ -34,13 +37,14 @@ public class Bundle implements Serializable{
 		
 	}
 	
-	public Bundle(String id, String type, List<Indicator> indicators, List<Relationship> relationships,
+	public Bundle(String id, String type, List<Indicator> indicators, List<Relationship> relationships, List<Malware> malware,
 			Campaign campaign) {
 		super();
 		this.id = id;
 		this.type = type;
 		this.indicators = indicators;
 		this.relationships = relationships;
+		this.malware = malware;
 		this.campaign = campaign;
 	}
 
@@ -82,6 +86,14 @@ public class Bundle implements Serializable{
 
 	public void setRelationships(List<Relationship> relationships) {
 		this.relationships = relationships;
+	}
+	
+	public List<Malware> getMalware() {
+		return malware;
+	}
+
+	public void setMalware(List<Malware> malware) {
+		this.malware = malware;
 	}
 
 	public Campaign getCampaign() {
