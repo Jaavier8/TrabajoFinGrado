@@ -95,6 +95,7 @@ public class OWLJena {
 			List<Individual> relationships = new ArrayList<Individual>();
 			Campaign c = bundle.getCampaign();
 			System.out.println(c.getType());
+			//Introducimos Campaign en la ontología
 			Individual campaign = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Campaign:" + c.getIdentifier(), campaignClass);
 			campaign.setPropertyValue(type, model.createTypedLiteral(c.getType()));
 			campaign.setPropertyValue(spec_version, model.createTypedLiteral(c.getSpec_version()));
@@ -104,6 +105,7 @@ public class OWLJena {
 			campaign.setPropertyValue(name, model.createTypedLiteral(c.getName()));
 			campaign.setPropertyValue(description, model.createTypedLiteral(c.getDescription()));
 			campaign.setPropertyValue(labels, model.createTypedLiteral(c.getLabels()));
+			//Introducimos Malware
 			int pos=0;
 			for(Malware mal: bundle.getMalware()) {
 				malwares.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Malware:" + mal.getIdentifier(), malwareClass));
@@ -116,6 +118,7 @@ public class OWLJena {
 				malwares.get(pos).setPropertyValue(is_family, model.createTypedLiteral(mal.getIs_family()));
 				pos++;
 			}
+			//Introducimos Indicator
 			pos=0;
 			for(Indicator ind: bundle.getIndicators()) {
 				indicators.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Indicator:" + ind.getIdentifier(), indicatorClass));
@@ -130,12 +133,15 @@ public class OWLJena {
 				indicators.get(pos).setPropertyValue(pattern_type, model.createTypedLiteral(ind.getPattern_type()));
 				indicators.get(pos).setPropertyValue(pattern_version, model.createTypedLiteral(ind.getPattern_version()));
 				indicators.get(pos).setPropertyValue(valid_from, model.createTypedLiteral(ind.getValid_from()));
+				//Indicator indicates Campaign
 				indicators.get(pos).setPropertyValue(indicates, campaign);
+				//Indicator indicates Malware
 				for (Individual mal: malwares) {
-					indicators.get(pos).setPropertyValue(indicates, mal);
+					indicators.get(pos).addProperty(indicates, mal);
 				}
 				pos++;
 			}
+			//Introducimos Relationship
 			pos=0;
 			for(Relationship rel: bundle.getRelationships()) {
 				relationships.add(model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#Relationship:" + rel.getIdentifier(), relationshipClass));
@@ -149,15 +155,20 @@ public class OWLJena {
 				relationships.get(pos).setPropertyValue(target_ref, model.createTypedLiteral(rel.getTarget_ref()));
 				pos++;
 			}
+			//Propiedades de relación
 			for(Individual mal: malwares) {
+				//Malware isUsedBy Campaign
 				mal.setPropertyValue(isUsedBy, campaign);
-				campaign.setPropertyValue(uses, mal);
+				//Campaign uses Malware
+				campaign.addProperty(uses, mal);
+				//Malware isIndicatedBy Indicator
 				for(Individual ind: indicators) {
-					mal.setPropertyValue(isIndicatedBy, ind);
+					mal.addProperty(isIndicatedBy, ind);
 				}
 			}
+			//Campaign isIndicatedBy Indicator
 			for(Individual ind: indicators) {
-				campaign.setPropertyValue(isIndicatedBy, ind);
+				campaign.addProperty(isIndicatedBy, ind);
 			}
 		}
 		File file = new File("/home/kali/Documents/TFG/ontology_test.owl");
@@ -167,5 +178,4 @@ public class OWLJena {
 		model.write(new PrintWriter(file));
 		return file;
 	}
-	
 }

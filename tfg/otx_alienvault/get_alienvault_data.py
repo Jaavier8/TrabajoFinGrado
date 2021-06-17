@@ -40,7 +40,7 @@ def get_upload_datetime():
 def get_alienvault_data():
     download_from_datetime = get_upload_datetime()
     data = otx_misp.get_pulses(API_KEY, from_timestamp=download_from_datetime)
-    print(data)
+    #print(data)
     return data
 
 def alienvault_data2stix(data):
@@ -69,7 +69,6 @@ def alienvault_data2stix(data):
             malware = stix2.Malware(name=malware_family,
                                     is_family=True)
 
-            print(malware)
             bundle_objects.append(malware)
             malware_objects.append(malware)
 
@@ -92,15 +91,74 @@ def alienvault_data2stix(data):
         #List of bundles
         bundles.append(stix2.Bundle(objects=bundle_objects))
     print(len(bundles))
+    aux=1
     for bundle in bundles:
-        with open('bundle.json', 'w') as f:
-            print(bundle, file=f)
-        with open('bundle.json') as f:
-            bundle = json.dumps(json.load(f))
-            print(type(bundle))
-            resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
-            print(resp)
-        cmd('rm bundle.json')
+        objects = []
+        for object in bundle["objects"]:
+            if object["type"] == "campaign":
+                references = []
+                for reference in object["external_references"]:
+                    references.append({"source_name" : reference["source_name"], "url" : reference["url"]})
+                objects.append({"type" : object["type"],
+                                "spec_version" : object["spec_version"],
+                                "id" : object["id"],
+                                "created" : str(object["created"]),
+                                "modified" : str(object["modified"]),
+                                "name" : object["name"],
+                                "description" : object["description"],
+                                "external_references" : references,
+                                "labels" : object["labels"]
+                                })
+            elif object["type"] == "malware":
+                objects.append({"type" : object["type"],
+                                "spec_version" : object["spec_version"],
+                                "id" : object["id"],
+                                "created" : str(object["created"]),
+                                "modified" : str(object["modified"]),
+                                "name" : object["name"],
+                                "is_family" : object["is_family"]
+                                })
+            elif object["type"] == "indicator":
+                objects.append({"type" : object["type"],
+                                "spec_version" : object["spec_version"],
+                                "id" : object["id"],
+                                "created" : str(object["created"]),
+                                "modified" : str(object["modified"]),
+                                "name" : object["name"],
+                                "description" : object["description"],
+                                "pattern" : object["pattern"],
+                                "pattern_type" : object["pattern_type"]
+                                })
+            elif object["type"] == "relationship":
+                objects.append({"type" : object["type"],
+                                "spec_version" : object["spec_version"],
+                                "id" : object["id"],
+                                "created" : str(object["created"]),
+                                "modified" : str(object["modified"]),
+                                "relationship_type" : object["relationship_type"],
+                                "source_ref" : object["source_ref"],
+                                "target_ref" : object["target_ref"]
+                                })
+        # print(bundle["objects"])
+        print(type(objects))
+        bundle2send = {"type": bundle["type"], "id": bundle["id"], "objects": objects}
+        data2send = json.dumps(bundle2send)
+        #print(data2send)
+        if(aux == 1):
+            with open('data.json', 'w') as file:
+                json.dump(data2send, file)
+            aux = 2
+        # with open('bundle.json', 'w') as f:
+        #     print(bundle, file=f)
+        # with open('bundle.json') as f:
+        #     bundle = json.dumps(json.load(f))
+            # print(type(bundle))
+            # resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
+            # print(resp)
+        headers = {'Content-type':'application/json', 'Accept':'application/json'}
+        #resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=data2send, headers=headers)
+        #print(resp)
+        # cmd('rm bundle.json')
 
 
 
