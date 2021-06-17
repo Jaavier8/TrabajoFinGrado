@@ -6,6 +6,8 @@ import stix2
 import requests
 from datetime import datetime
 
+from generate_rules import generate_rules
+
 import json
 
 API_KEY = "1867b144115ca34d2e4f99035863f257db611a9662459233334b744dcb984487"

@@ -1,3 +1,28 @@
-curl https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
-curl -G https://api.abuseipdb.com/api/v2/blacklist -d confidenceMinimum=90 -H "Key: dd13fa2f9319127e940894ecbbed05376daa795a65012063ea81f3deb332ff616f3242a50fadffb9" -H "Accept: text/plain"
-curl https://www.binarydefense.com/banlist.txt
+"""
+// Regla para generar una vulnerabilidad y asociarla a Campaign y Malware
+CONSTRUCT {
+	?newv a cyberthreat_STIX:Vulnerability.
+	?newv cyberthreat_STIX:description {summary} .
+	?newv cibersituational-ontology:name {name} .
+	?newv cyberthreat_STIX:isTargetedBy ?c.
+    ?c cyberthreat_STIX:targets ?newv
+	?newv cyberthreat_STIX:isTargetedBy ?m.
+    ?m cyberthreat_STIX:targets ?newv
+}
+WHERE{
+	?c a cyberthreat_STIX:Campaign.
+	?m a cyberthreat_STIX:Malware.
+    ?c cyberthreat_STIX:id {id}
+    ?m cibersituational-ontology:name {mname}
+}
+
+// Regla para generar una amenaza a través de la vulnerabilidad anterior
+CONSTRUCT {
+	?newa a cyberthreat_DRM:Threat.
+	?newa cibersituational-ontology:impact {cvss}^^xsd:float .
+	?newa cyberthreat_STIX:exploits ?v.
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+	?v cibersituational-ontology:name {name}."
+}"""
