@@ -49,14 +49,42 @@ function OntologyPage(props) {
     document.body.removeChild(element);
   }
 
-  const handleDownload = async () => {
+  function downloadBlob(blob, name = 'file.txt') {
+    // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Create a link element
+    const link = document.createElement("a");
+
+    // Set link's href to point to the Blob URL
+    link.href = blobUrl;
+    link.download = name;
+
+    // Append link to the body
+    document.body.appendChild(link);
+
+    // Dispatch click event on the link
+    // This is necessary as link.click() does not work on the latest firefox
+    link.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+
+    // Remove link from body
+    document.body.removeChild(link);
+  }
+
+  const handleDownload = async (type) => {
     const request = {
       names: campaignAccepted
     };
     try {
       console.log(JSON.stringify(request))
       const res = await fetch(
-        `http://localhost:8080/TFG/rest/bundle/jsondownload`,
+        `http://localhost:8080/TFG/rest/bundle/` + type,
         {
           method: "POST",
           headers: {
@@ -65,13 +93,19 @@ function OntologyPage(props) {
           body: JSON.stringify(request)
         }
       );
-      let jsonData = await res.json();
-      console.log(typeof(indicatorsData))
-      download(
-        "prueba.json",
-        JSON.stringify(jsonData)
-      );
-      console.log(jsonData)
+      if(type == "jsondownload"){
+        let resData = await res.json();
+        download(
+          "prueba.json",
+          JSON.stringify(resData)
+        );
+      } else {
+        let blob = await res.blob();
+        downloadBlob(
+          blob,
+          "test.owl"
+        )
+      }
     } catch (e) {
       // Nothing to do
     }
@@ -101,10 +135,10 @@ function OntologyPage(props) {
             </Form>
           </div>
           <div className="buttons-container">
-            <Button onClick={e => handleDownload()} className="nord-button" variant="primary">
+            <Button onClick={e => handleDownload("jsondownload")} className="nord-button" variant="primary">
               Descargar en formato JSON
             </Button>
-            <Button onClick={e => handleDownload()} className="nord-button" variant="primary">
+            <Button onClick={e => handleDownload("owldownload")} className="nord-button" variant="primary">
               Descargar archivo OWL
             </Button>
           </div>

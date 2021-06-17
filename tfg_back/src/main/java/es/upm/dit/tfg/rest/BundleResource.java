@@ -1,5 +1,6 @@
 package es.upm.dit.tfg.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -121,22 +122,47 @@ public class BundleResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("jsondownload")
-	public List<Campaign> jsonDownload(String JSONBodyString) throws URISyntaxException {
+	public List<Bundle> jsonDownload(String JSONBodyString) throws URISyntaxException {
 		JSONObject jsonBody = new JSONObject(JSONBodyString);
 		JSONArray names = jsonBody.getJSONArray("names");
+		
 		List<String> namesList = new ArrayList<String>();
-		
-		List<Campaign> allCampaigns = CampaignDAOImpl.getInstance().readAll();
-		List<Campaign> filtered = new ArrayList<Campaign>();
-		
 		for (int i = 0; i < names.length(); i++) {
 			namesList.add(names.getString(i));
 		}
 		
-		for(Campaign c: allCampaigns) {
-				if(namesList.contains(c.getName())) filtered.add(c);
+		List<Bundle> result = new ArrayList<Bundle>();
+		
+		for(Bundle b: BundleDAOImpl.getInstance().readAll()) {
+			if(namesList.contains(b.getCampaign().getName())) result.add(b);
 		}
-		return filtered;
+		
+		return result;
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("owldownload")
+	public Response owlDownload(String JSONBodyString) throws URISyntaxException, IOException {
+		JSONObject jsonBody = new JSONObject(JSONBodyString);
+		JSONArray names = jsonBody.getJSONArray("names");
+		
+		List<String> namesList = new ArrayList<String>();
+		for (int i = 0; i < names.length(); i++) {
+			namesList.add(names.getString(i));
+		}
+		
+		List<Bundle> filteredBundle = new ArrayList<Bundle>();
+		
+		for(Bundle b: BundleDAOImpl.getInstance().readAll()) {
+			if(namesList.contains(b.getCampaign().getName())) filteredBundle.add(b);
+		}
+		
+		OWLJena jenaAPI = new OWLJena();
+		File result = jenaAPI.createOWL(filteredBundle);
+		
+		return Response.ok(result, MediaType.APPLICATION_OCTET_STREAM).build();
 	}
 
 	private Campaign parser2Campaign(JSONObject campaign) {
