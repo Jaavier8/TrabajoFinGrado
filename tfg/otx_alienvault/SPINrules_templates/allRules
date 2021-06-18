@@ -1,0 +1,62 @@
+// Regla para generar una vulnerabilidad y asociarla a Campaign y Malware
+CONSTRUCT {
+	?newv a cyberthreat_STIX:Vulnerability.
+	?newv cyberthreat_STIX:description {cvesummary} .
+	?newv cibersituational-ontology:name {cvename} .
+	?newv cyberthreat_STIX:isTargetedBy ?c.
+    ?c cyberthreat_STIX:targets ?newv.
+	?newv cyberthreat_STIX:isTargetedBy ?m.
+    ?m cyberthreat_STIX:targets ?newv.
+}
+WHERE{
+	?c a cyberthreat_STIX:Campaign.
+	?m a cyberthreat_STIX:Malware.
+    ?c cyberthreat_STIX:id {campaignid}.
+    ?m cibersituational-ontology:name {malwarename}.
+}
+
+// Regla para generar una amenaza a través de la vulnerabilidad anterior
+CONSTRUCT {
+	?newa a cyberthreat_DRM:Threat.
+	?newa cibersituational-ontology:impact {cvss}^^xsd:float .
+	?newa cyberthreat_STIX:exploits ?v.
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+	?v cibersituational-ontology:name {cvename}.
+}
+
+// Regla para generar un Attack Pattern de la vulnerabilidad anterior
+CONSTRUCT {
+	?newap a cyberthreat_STIX:Attack_Pattern.
+    ?newap cibersituational-ontology:name {attackpatternname}.
+    ?newap cyberthreat_STIX:description {attackpatterndescription}.
+    ?newap cyberthreat_STIX:uses ?m.
+    ?m cyberthreat_STIX:isUsedBy ?newap
+	?newap cyberthreat_STIX:targets ?v .
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+    ?m a cyberthreat_STIX:Malware.
+	?v cibersituational-ontology:name {cvename}.
+    ?m cibersituational-ontology:name {malwarename}.
+}
+
+// Regla para generar un Course of Action para el Attack Pattern anterior
+CONSTRUCT {
+	?newca a cyberthreat_STIX:Course_of_Action.
+	?newca cyberthreat_STIX:description {cvesolutions} .
+    ?newca cyberthreat_DRM:mitigates ?ap.
+    ?newca cyberthreat_DRM:mitigates ?m.
+    ?newca cyberthreat_STIX:remediates ?v.
+    ?newca cyberthreat_STIX:remediates ?m.
+    ?m cibersituational-ontology:isMitigatedBy ?newca.
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+    ?m a cyberthreat_STIX:Malware.
+    ?ap a cyberthreat_STIX:Attack_Pattern.
+	?v cibersituational-ontology:name {cvename}.
+    ?m cibersituational-ontology:name {malwarename}.
+    ?m cibersituational-ontology:name {attackpatternname}.
+}

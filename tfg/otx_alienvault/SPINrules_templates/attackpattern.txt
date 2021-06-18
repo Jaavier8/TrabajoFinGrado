@@ -1,0 +1,14 @@
+CONSTRUCT {
+	?newap a cyberthreat_STIX:Attack_Pattern.
+  ?newap cibersituational-ontology:name {attackpatternname}.
+  ?newap cyberthreat_STIX:description {attackpatterndescription}.
+  ?newap cyberthreat_STIX:uses ?m.
+  ?m cyberthreat_STIX:isUsedBy ?newap
+	?newap cyberthreat_STIX:targets ?v .
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+  ?m a cyberthreat_STIX:Malware.
+	?v cibersituational-ontology:name {cvename}.
+  ?m cibersituational-ontology:name {malwarename}.
+}
