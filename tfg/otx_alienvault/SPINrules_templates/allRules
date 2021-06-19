@@ -1,4 +1,4 @@
-// Regla para generar una vulnerabilidad y asociarla a Campaign y Malware
+// Regla para generar una vulnerabilidad y asociarla a Campaign, Malware y Asset
 CONSTRUCT {
 	?newv a cyberthreat_STIX:Vulnerability.
 	?newv cyberthreat_STIX:description {cvesummary} .
@@ -7,12 +7,16 @@ CONSTRUCT {
     ?c cyberthreat_STIX:targets ?newv.
 	?newv cyberthreat_STIX:isTargetedBy ?m.
     ?m cyberthreat_STIX:targets ?newv.
+	?a cyberthreat_STIXDRM:has_vulnerability ?newv.
 }
 WHERE{
 	?c a cyberthreat_STIX:Campaign.
 	?m a cyberthreat_STIX:Malware.
+	?a a {typeofasset}.
     ?c cyberthreat_STIX:id {campaignid}.
     ?m cibersituational-ontology:name {malwarename}.
+	{conditionasset}.
+	BIND(URI(cyberthreat_STIX:Vulnerability{numberofvulnerability}) as ?newv)
 }
 
 // Regla para generar una amenaza a través de la vulnerabilidad anterior
@@ -20,10 +24,15 @@ CONSTRUCT {
 	?newa a cyberthreat_DRM:Threat.
 	?newa cibersituational-ontology:impact {cvss}^^xsd:float .
 	?newa cyberthreat_STIX:exploits ?v.
+	?newa cyberthreat_DRM:threatens ?a.
+	?a cyberthreat_DRM:isExposedTo ?newa.
 }
 WHERE{
 	?v a cyberthreat_STIX:Vulnerability.
+	?a a {typeofasset}.
 	?v cibersituational-ontology:name {cvename}.
+	{conditionasset}.
+	BIND(URI(cyberthreat_DRM:Threat{numberofthreat}) as ?newa)
 }
 
 // Regla para generar un Attack Pattern de la vulnerabilidad anterior
@@ -40,6 +49,7 @@ WHERE{
     ?m a cyberthreat_STIX:Malware.
 	?v cibersituational-ontology:name {cvename}.
     ?m cibersituational-ontology:name {malwarename}.
+	BIND(URI(cyberthreat_STIX:Attack_Pattern{numberofattackpattern}) as ?newap)
 }
 
 // Regla para generar un Course of Action para el Attack Pattern anterior
@@ -59,4 +69,5 @@ WHERE{
 	?v cibersituational-ontology:name {cvename}.
     ?m cibersituational-ontology:name {malwarename}.
     ?m cibersituational-ontology:name {attackpatternname}.
+	BIND(URI(cyberthreat_STIX:Vulnerability{numberofcourseofaction}) as ?newap)
 }

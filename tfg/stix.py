@@ -5,13 +5,13 @@ from bad_domains.get_baddomains import baddomains2stix
 from malware_hash.get_malwarehash import malwarehash2stix
 from disposable_emails_domains.get_emaildomains import emaildomains2stix
 
-def convert2stix(data, type):
+def convert2stix(data, type, type_ip):
     if type == "baddomains":
         return baddomains2stix(data)
     elif type == "ips":
-        return badips2stix(data, "ips")
+        return badips2stix(data, "ips", type_ip)
     elif type == "subnets":
-        return badips2stix(data, "subnets")
+        return badips2stix(data, "subnets", type_ip)
     elif type == "emaildomains":
         return emaildomains2stix(data)
     elif type == "malwarehash":

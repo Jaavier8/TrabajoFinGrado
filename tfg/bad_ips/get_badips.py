@@ -14,6 +14,7 @@ def cmd(cmd):
 
 requests=[]
 ips=[]
+type_ip=[]
 subnets=[]
 ips_stix=[]
 ips_stix2json=[]
@@ -22,6 +23,7 @@ subnets_stix2json=[]
 
 def get_badips():
     """Introduce the IPs and subnets in two differents arrays"""
+    i=0
     with open('./bad_ips/badip_request.txt') as file:
         for domain in file:
             if domain not in requests:
@@ -35,13 +37,25 @@ def get_badips():
                         subnets.append(line.rstrip('\n'))
                     else:
                         ips.append(line.rstrip('\n'))
+                    type_ip.append(i)
         cmd('rm bad_ips.txt')
-    return {'ips': ips, 'subnets': subnets}
+        i=i+1
+    return {'ips': ips, 'subnets': subnets, 'type_ip': type_ip}
 
-def badips2stix(element, type):
+def badips2stix(element, type, type_ip):
     if type == "ips":
         for ip in element:
-            ips_stix.append(Indicator(name="IP used for malicious activities",
+            type = type_ip[element.index(ip)]
+            source = ""
+            if(type == 0):
+                source = "CINSscore"
+            elif(type == 1):
+                source = "FireHOL"
+            elif(type == 2):
+                source = "AbuseIPDB"
+            elif(type == 3):
+                source = "BinaryDefense"
+            ips_stix.append(Indicator(name="IP from " + source + " used for malicious activities",
                                         pattern="[ipv4-addr:value = '" + ip + "']",
                                         pattern_type="stix"))
         for ip in ips_stix:
