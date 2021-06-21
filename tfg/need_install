@@ -1,5 +1,4 @@
 pip install stix2
 pip install disposable-email-domains
-pip install OTXv2
 pip install otx-misp
 pip install requests
