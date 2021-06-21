@@ -120,35 +120,35 @@ email_domains_stix = convert2stix(email_domains,"emaildomains",0)
 print_ok('[+] Conversion completed')
 print_result('Number of disposable domains:' + str(len(email_domains_stix)))
 print('\n')
-print(type(email_domains_stix[0]))
-print(type(json.dumps(email_domains_stix[0])))
+# print(type(email_domains_stix[0]))
+# print(type(json.dumps(email_domains_stix[0])))
 
-print(bad_ips_stix[0])
-print(bad_subnets_stix[0])
-print(ssl_ips_stix[0])
-print(ssl_hash_stix[0])
-print(bad_domains_stix[0])
-print(malware_hash_stix[0])
-print(malware_hash_stix[1])
-print(malware_hash_stix[2])
-print(email_domains_stix[0])
+# print(bad_ips['ips'][0])
+# print(bad_ips['subnets'][0])
+# print(ssl_ips[0])
+# print(ssl_hash[0])
+# print(bad_domains[0])
+# print(malware_hash[0])
+# print(malware_hash[1])
+# print(malware_hash[2])
+# print(email_domains[0])
 
 ##################################
 #########SEND TO DATABASE#########
 ##################################
-print('[*] Sending data to a database')
-headers = {'Content-type':'application/json', 'Accept':'application/json'}
-for indicator in email_domains_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in malware_hash_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_domains_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in ssl_hash_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in ssl_ips_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_ips_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
-for indicator in bad_subnets_stix:
-    resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# print('[*] Sending data to a database')
+# headers = {'Content-type':'application/json', 'Accept':'application/json'}
+# for indicator in email_domains_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in malware_hash_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_domains_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in ssl_hash_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in ssl_ips_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_ips_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)
+# for indicator in bad_subnets_stix:
+#     resp = requests.post('http://localhost:8080/TFG/rest/indicator', json=indicator, headers=headers)

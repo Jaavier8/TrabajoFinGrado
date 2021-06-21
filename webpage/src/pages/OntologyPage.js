@@ -96,14 +96,14 @@ function OntologyPage(props) {
       if(type == "jsondownload"){
         let resData = await res.json();
         download(
-          "prueba.json",
+          "indicators.json",
           JSON.stringify(resData)
         );
       } else {
         let blob = await res.blob();
         downloadBlob(
           blob,
-          "test.owl"
+          "ontology.owl"
         )
       }
     } catch (e) {

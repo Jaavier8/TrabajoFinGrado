@@ -1,0 +1,14 @@
+CONSTRUCT {
+	?newa a cyberthreat_DRM:Threat.
+	?newa cibersituational-ontology:impact {cvss}^^xsd:float .
+	?newa cyberthreat_STIX:exploits ?v.
+	?newa cyberthreat_DRM:threatens ?a.
+	?a cyberthreat_DRM:isExposedTo ?newa.
+}
+WHERE{
+	?v a cyberthreat_STIX:Vulnerability.
+	?a a {typeofasset}.
+	?v cibersituational-ontology:name {cvename}.
+	{conditionasset}.
+	BIND(URI(cyberthreat_DRM:Threat{numberofthreat}) as ?newa)
+}

@@ -18,15 +18,32 @@ API_KEY = "1867b144115ca34d2e4f99035863f257db611a9662459233334b744dcb984487"
 # print(datetime.utcfromtimestamp(time24).strftime('%Y-%m-%d %H:%M:%S'))
 # print(datetime.fromtimestamp(time24).strftime('%Y-%m-%d %H:%M:%S'))
 
+################################
+
+def print_ok(text):
+    OKGREEN = '\033[92m'
+    ENDC = '\033[0m'
+    print(OKGREEN + text + ENDC)
+
+def print_error(text):
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    print(FAIL + text + ENDC)
+
+def print_result(text):
+    OKBLUE = '\033[94m'
+    ENDC = '\033[0m'
+    print(OKBLUE + text + ENDC)
+
 def cmd(cmd):
     """Executes the command in cmd and exits if it fails"""
-    #res = subprocess.call(cmd.split(' '), shell=True)
     res = subprocess.call(cmd, shell=True)
     if res != 0:
         # logger.error(f'Error: The result was {res} when executing command "{cmd}".')
         print_error(f'[-] Error: The result was {res} when executing command "{cmd}".')
         sys.exit(1)
 
+################################
 #Cogemos la hora en la que se produjo la última descarga y la actualizamos
 def get_upload_datetime():
     if(os.path.isfile(os.getcwd() + "/otx_alienvault/datetime_last_download.txt")):
@@ -42,7 +59,6 @@ def get_upload_datetime():
 def get_alienvault_data():
     download_from_datetime = get_upload_datetime()
     data = otx_misp.get_pulses(API_KEY, from_timestamp=download_from_datetime)
-    #print(data)
     return data
 
 def alienvault_data2stix(data):
@@ -58,14 +74,17 @@ def alienvault_data2stix(data):
                                                         url=reference))
 
         #Creating campaign
-        campaign = stix2.Campaign(name=pulse["name"],
+        try:
+            campaign = stix2.Campaign(name=pulse["name"],
                                     description=pulse["description"],
                                     created=datetime.strptime(pulse["created"], "%Y-%m-%dT%H:%M:%S.%f"),
                                     modified=datetime.strptime(pulse["modified"], "%Y-%m-%dT%H:%M:%S.%f"),
                                     external_references=references,
                                     labels=pulse["tags"])
-        bundle_objects.append(campaign)
-
+            bundle_objects.append(campaign)
+        except ValueError:
+            print("Fecha erronea")
+            continue
         #Creating malware
         for malware_family in pulse["malware_families"]:
             malware = stix2.Malware(name=malware_family,
@@ -76,6 +95,10 @@ def alienvault_data2stix(data):
 
         #Creating indicators and relationships with campaign and Malware
         for indicator in pulse["indicators"]:
+            # #Rules
+            # if (indicator["type"] == "CVE"):
+            #     generate_rules(indicator["indicator"], campaign["id"], malware["id"])
+
             ind = stix2.Indicator(name=indicator["title"],
                                     description=indicator["description"],
                                     created=datetime.strptime(indicator["created"], "%Y-%m-%dT%H:%M:%S"),
@@ -129,7 +152,9 @@ def alienvault_data2stix(data):
                                 "name" : object["name"],
                                 "description" : object["description"],
                                 "pattern" : object["pattern"],
-                                "pattern_type" : object["pattern_type"]
+                                "pattern_type" : object["pattern_type"],
+                                "pattern_version" : object["pattern_version"],
+                                "valid_from" : str(object["valid_from"])
                                 })
             elif object["type"] == "relationship":
                 objects.append({"type" : object["type"],
@@ -142,14 +167,9 @@ def alienvault_data2stix(data):
                                 "target_ref" : object["target_ref"]
                                 })
         # print(bundle["objects"])
-        print(type(objects))
         bundle2send = {"type": bundle["type"], "id": bundle["id"], "objects": objects}
         data2send = json.dumps(bundle2send)
         #print(data2send)
-        if(aux == 1):
-            with open('data.json', 'w') as file:
-                json.dump(data2send, file)
-            aux = 2
         # with open('bundle.json', 'w') as f:
         #     print(bundle, file=f)
         # with open('bundle.json') as f:
@@ -158,8 +178,10 @@ def alienvault_data2stix(data):
             # resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=bundle)
             # print(resp)
         headers = {'Content-type':'application/json', 'Accept':'application/json'}
-        #resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=data2send, headers=headers)
-        #print(resp)
+        print('[*] Sending data to database')
+        resp = requests.post('http://localhost:8080/TFG/rest/bundle', data=data2send, headers=headers)
+        print(resp)
+        print_ok('[+] Objects created')
         # cmd('rm bundle.json')
 
 

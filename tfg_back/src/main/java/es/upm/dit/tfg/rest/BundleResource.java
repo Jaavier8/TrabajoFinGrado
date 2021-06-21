@@ -44,8 +44,6 @@ public class BundleResource {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Bundle> readAll() throws IOException{
-		OWLJena test = new OWLJena();
-		test.createOWL(BundleDAOImpl.getInstance().readAll());
 		return BundleDAOImpl.getInstance().readAll();
 	}
 	

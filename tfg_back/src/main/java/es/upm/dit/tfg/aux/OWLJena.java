@@ -27,6 +27,8 @@ public class OWLJena {
 	private static OntClass relationshipClass;
 	private static OntClass campaignClass;
 	private static OntClass malwareClass;
+	private static OntClass serverClass;
+	private static OntClass acquiredSWClass;
 	private static OntModel model;
 	
 	private static DatatypeProperty type;
@@ -65,6 +67,10 @@ public class OWLJena {
 				campaignClass = cls;
 			if(cls.getLocalName() != null && cls.getLocalName().equals("Malware"))
 				malwareClass = cls;
+			if(cls.getLocalName() != null && cls.getLocalName().equals("Server"))
+				serverClass = cls;
+			if(cls.getLocalName() != null && cls.getLocalName().equals("AcquiredSW"))
+				acquiredSWClass = cls;
 		}
 		type = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#type");
 		spec_version = model.createDatatypeProperty("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_STIX#spec_version");
@@ -89,6 +95,14 @@ public class OWLJena {
 	}
 	
 	public File createOWL(List<Bundle> bundles) throws IOException {
+		Individual server1 = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_DRM#Server:MicrosoftServerMessage", serverClass);
+		server1.setPropertyValue(name, model.createTypedLiteral("Microsoft Server Message"));
+		Individual server2 = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_DRM#Server:MicrosoftExchangeServer", serverClass);
+		server2.setPropertyValue(name, model.createTypedLiteral("Microsoft Exchange Server"));
+		Individual sw1 = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_DRM#Server:MicrosoftOffice", acquiredSWClass);
+		sw1.setPropertyValue(name, model.createTypedLiteral("Microsoft Office"));
+		Individual sw2 = model.createIndividual("http://www.semanticweb.org/upm/ontologies/2019/11/cyberthreat_DRM#Server:MicrosoftAzure", acquiredSWClass);
+		sw2.setPropertyValue(name, model.createTypedLiteral("Microsoft Azure"));
 		for(Bundle bundle: bundles) {
 			List<Individual> malwares = new ArrayList<Individual>();
 			List<Individual> indicators = new ArrayList<Individual>();

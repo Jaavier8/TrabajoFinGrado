@@ -11,4 +11,5 @@ WHERE{
   ?m a cyberthreat_STIX:Malware.
 	?v cibersituational-ontology:name {cvename}.
   ?m cibersituational-ontology:name {malwarename}.
+	BIND(URI(cyberthreat_STIX:Attack_Pattern{numberofattackpattern}) as ?newap)
 }
