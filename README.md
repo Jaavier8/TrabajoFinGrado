@@ -12,10 +12,10 @@ Para clonar el proyecto ejecuta en un terminal:
 
 Para el correcto funcionamiento es necesario instalar una serie de bibliotecas como módulos en Python:
 
-1.`pip install stix2`
-2.`pip install disposable-email-domains`
-3.`pip install otx-misp`
-4.`pip install requests`
+1.`pip install stix2`.
+2.`pip install disposable-email-domains`.
+3.`pip install otx-misp`.
+4.`pip install requests`.
 
 ### Funcionamiento 🔧
 
